@@ -7,9 +7,26 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window); // Declaring function to process the inputs
 
-// Instanciating a GLFWwindow object and setting its configuration
+// Source code from the vertex shader
+const char *vertexShaderSource = "#version 330 core\n"
+    "layout (location = 0) in vec3 aPos;\n"
+    "void main()\n"
+    "{\n"
+    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "}\0";
 
+// Source code from the fragment shader
+const char* fragmentShaderSource = "#version 330 core\n"
+    "out vec4 FragColor;\n"
+    "void main()\n"
+    "{\n"
+    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "}\n\0";
+
+    
 int main() {
+
+    // Instanciating a GLFWwindow object and setting its configuration
     glfwInit(); // Initialize the GLFW library
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // What version of OpenGL we want to use
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); // Version 3.3
@@ -38,6 +55,68 @@ int main() {
     glViewport(0, 0, 800, 600);
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);  
+
+    //=============== SHADERS ================================================
+
+    // PIPELINE PART 1
+    // Create a vertex shader object with ID and attach the shader source code to it
+    unsigned int vertexShader;
+    vertexShader = glCreateShader(GL_VERTEX_SHADER); // Create a shader object
+    // The second parameter is the number of strings in the third parameter (source code) of the shader object
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL); // Attach the shader source code to the shader object 
+    glCompileShader(vertexShader); // Compile the shader
+
+
+
+    //PIPELINE PART 5
+    // Create a fragment shader object with ID and attach the shader source code to it
+    unsigned int fragmentShader;
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER); // Create a fragment shader object
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL); // Attach the shader source code to the shader object
+    glCompileShader(fragmentShader); // Compile the shader
+
+
+    // Create a shader program object to link the shaders created previously
+    unsigned int shaderProgram;
+    shaderProgram = glCreateProgram(); // Final linked version of multiple shaders combined
+    // Linking: Links the output of the vertex shader to the input of the fragment shader
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram); // Link the shaders
+    //Result: Program object that we can activate with glUseProgram and use to render objects
+    
+    // Delete the shader objects after linking them to the program object
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+    //===================================================================================================
+
+    // Define the vertices coodinates of the triangle
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f, // Left
+         0.5f, -0.5f, 0.0f, // Right
+         0.0f,  0.5f, 0.0f  // Top
+    };
+
+    // Declare a Vertex Array Object (VAO) to store the vertex attribute configuration
+    // Does not need to manually set the vertex attribute pointers again on every draw call
+    unsigned int VAO;
+    // Allocate a buffer on the GPU to store the vertex data (optimization purposes)
+    unsigned int VBO;
+
+    glGenVertexArrays(1,&VAO); // Generate a vertex array object
+    glGenBuffers(1, &VBO); // Generate a buffer object name
+
+    glBindVertexArray(VAO); // Bind the vertex array object
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO); // Bind the buffer object to the target GL_ARRAY_BUFFER
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // Copy the vertex data into the buffer's memory
+
+    // Tell OpenGL how to interpret the vertex data (Per vertex attribute)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0); // Enable the vertex attribute at location 0
+
+
+    
     
     // Render loop
     while (!glfwWindowShouldClose(window)) { // Check if the window should close
@@ -47,6 +126,15 @@ int main() {
         // Rendering commands here
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set the color that OpenGL uses to clear the screen
         glClear(GL_COLOR_BUFFER_BIT); // Clear the screen with the color set by glClearColor
+        
+        // Drawing commands here
+        glUseProgram(shaderProgram); // Activate the shader program object
+        // NOTE: Every shader and rendering call after glUseProgram will now use this program object
+        glBindVertexArray(VAO); // Bind the vertex array object
+        glDrawArrays(GL_TRIANGLES, 0, 3); // Draw the triangle
+        // The first parameter is the mode, the second is the starting index, and the third is the number of vertices to draw
+        
+
 
         // DOUBLE BUFFERING: The front buffer contains the final output image that is shown at the screen
         glfwSwapBuffers(window); // Swap the color buffer that is used to render

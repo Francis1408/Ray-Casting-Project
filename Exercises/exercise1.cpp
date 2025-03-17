@@ -90,11 +90,17 @@ int main() {
     glDeleteShader(fragmentShader);
     //===================================================================================================
 
-    // Define the vertices coodinates of the triangle
+    // Define the vertices coodinates of the triangles
     float vertices[] = {
+        //First Triangle
         -0.5f, -0.5f, 0.0f, // Left
          0.5f, -0.5f, 0.0f, // Right
-         0.0f,  0.5f, 0.0f  // Top
+         0.0f,  0.5f, 0.0f,  // Top
+
+        //Second Triangle
+        0.5f, -0.5f, 0.0f, // Left
+        1.0f, -0.5f, 0.0f, // Right
+        0.75f, 0.5f, 0.0f // Top
     };
 
     // Declare a Vertex Array Object (VAO) to store the vertex attribute configuration
@@ -131,7 +137,7 @@ int main() {
         glUseProgram(shaderProgram); // Activate the shader program object
         // NOTE: Every shader and rendering call after glUseProgram will now use this program object
         glBindVertexArray(VAO); // Bind the vertex array object
-        glDrawArrays(GL_TRIANGLES, 0, 3); // Draw the triangle
+        glDrawArrays(GL_TRIANGLES, 0, 6); // Draw the triangles
         // The first parameter is the mode, the second is the starting index, and the third is the number of vertices to draw
         
 

@@ -45,7 +45,7 @@ int main() {
 
     //=============== SHADERS ================================================
 
-    Shader ourShader("Shaders/shaderCoordinateColor.vs", "Shaders/shaderCoordinateColor.fs");
+    Shader ourShader("shaderCoordinateColor.vs", "shaderCoordinateColor.fs");
     
     //===================================================================================================
 

@@ -218,30 +218,32 @@ int main() {
         unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform"); // Locate the uniform variable
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans)); // Set the uniform variable
        
-        //===================================================================================================
         //Bind the textures
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
-
+        
         ourShader.setFloat("mixValue", mixValue);
-
+        
         ourShader.use(); // Activate the shader program object
-
-
+        
+        
         // Drawing commands here
         glBindVertexArray(VAO); // Bind the vertex array object
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // Draw the rectangle
         // The first parameter is the mode, the second is the starting index, and the third is the number of vertices to draw
         
 
-
         // DOUBLE BUFFERING: The front buffer contains the final output image that is shown at the screen
         glfwSwapBuffers(window); // Swap the color buffer that is used to render
         glfwPollEvents(); // Check if any events are triggered
         
+
+
+
+        //===================================================================================================
     }
     
     glfwTerminate(); // Terminate the GLFW library and clean all the resources allocated

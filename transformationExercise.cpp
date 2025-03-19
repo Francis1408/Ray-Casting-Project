@@ -3,6 +3,11 @@
 #include "stb_image.h"
 #include "shader.h"
 
+// GLM Mathematics Library headers
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+
 #include <GLFW/glfw3.h>
 #include <math.h>
 #include <iostream>
@@ -12,6 +17,8 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window); // Declaring function to process the inputs
 
+// Texture mixing value
+float mixValue = 0.2f;
     
 int main() {
 
@@ -47,7 +54,7 @@ int main() {
 
     //=============== SHADERS ================================================
 
-    Shader ourShader("Shaders/shaderTexture.vs", "Shaders/shaderTexture.fs");
+    Shader ourShader("Shaders/shaderTransformation.vs", "Shaders/shaderTexture.fs");
     
     //===================================================================================================
 
@@ -111,16 +118,18 @@ int main() {
     
     
     // Set the texture wrapping/filtering options for texture 1 (on the currently bound texture object)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Set the texture wrapping parameters for the currently bound texture object
+    // Set the texture wrapping parameters for bopth the S and T axis
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Set the texture filtering parameters for the currently bound texture object
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Set the texture filtering parameters for the currently bound texture object
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     
     
     // Load and create a texture
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    unsigned char *data = stbi_load("Textures/container.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("Textures/container.jpg", &width, &height, &nrChannels, 0); //image's width, height and number of color channels
     
     if(data) {
         // Generating the Texture
@@ -151,9 +160,9 @@ int main() {
     // Set the texture wrapping parameters for bopth the S and T axis
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Set the texture filtering parameters for the currently bound texture object
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Set the texture filtering parameters for the currently bound texture object
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     
     // Load and create  texture 2
     data = stbi_load("Textures/awesomeface.png", &width, &height, &nrChannels, 0);
@@ -197,6 +206,19 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set the color that OpenGL uses to clear the screen
         glClear(GL_COLOR_BUFFER_BIT); // Clear the screen with the color set by glClearColor
 
+
+         //==================== TRANSFORMATIONS ============================================
+    
+        glm::mat4 trans = glm::mat4(1.0f); // Create the identity matrix
+        // OBS : The transformation sequence is reversed
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f)); // Apply a translation of 0.5 units in the x and -0.5 units in the y
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0)); // Apply a rotation of 90 degrees in the z axis
+
+        // Apply the transformations to the shader
+        unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform"); // Locate the uniform variable
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans)); // Set the uniform variable
+       
+        //===================================================================================================
         //Bind the textures
         // bind textures on corresponding texture units
         glActiveTexture(GL_TEXTURE0);
@@ -204,7 +226,7 @@ int main() {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
-
+        ourShader.setFloat("mixValue", mixValue);
 
         ourShader.use(); // Activate the shader program object
 
@@ -238,8 +260,20 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 // Function to deal with the inputs
 void processInput(GLFWwindow* window) {
 
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) { // If the key pressed is space
         glfwSetWindowShouldClose(window, true); // Set the window to close
+    }
+
+    if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        if(mixValue < 1.0f) {
+            mixValue += 0.01f;
+        }
+    }
+    if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        if(mixValue > 0.0f) {
+            mixValue -= 0.01f;
+        }
     }
 
 }

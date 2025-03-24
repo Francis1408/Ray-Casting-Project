@@ -1,14 +1,7 @@
 
-
-/*******************************************************************
-** This code is part of Breakout.
-**
-** Breakout is free software: you can redistribute it and/or modify
-** it under the terms of the CC BY 4.0 license as published by
-** Creative Commons, either version 4 of the License, or (at your
-** option) any later version.
-******************************************************************/
 #include "resourceManager.h"
+#include "glad/glad.h"
+
 
 #include <iostream>
 #include <sstream>
@@ -92,6 +85,9 @@ Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *
     const char *fShaderCode = fragmentCode.c_str();
     const char *gShaderCode = geometryCode.c_str();
     // 2. now create shader object from source code
+    printf("vShaderCode: %s\n", vShaderCode);
+    printf("fShaderCode: %s\n", fShaderCode);
+    printf("gShaderCode: %s\n", gShaderCode);
     Shader shader;
     shader.Compile(vShaderCode, fShaderCode, gShaderFile != nullptr ? gShaderCode : nullptr);
     return shader;

@@ -4,6 +4,11 @@
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
 
+#include "gameLevel.h"
+
+#include <iostream>
+#include <vector>
+
 enum GameState {
     GAME_ACTIVE,
     GAME_MENU,
@@ -17,6 +22,10 @@ class Game {
     GameState State;
     bool Keys[1024]; // Array of keys
     unsigned int Width, Height; // Width and Height of the window
+
+    // Level Maps
+    std::vector<GameLevel> Levels;
+    unsigned int Level;
 
     // Constructor
     Game(unsigned int width, unsigned int height);

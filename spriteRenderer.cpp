@@ -28,24 +28,15 @@ void SpriteRenderer::initRenderData()
     // configure VAO/VBO
     unsigned int VBO;
     float vertices[] = { 
-    // pos
-
-    // positions          // texture coords
-    0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
-    0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
-   -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
-   -0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // top left 
+        // pos      // tex
+        0.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f, 
     
-    /*
-    // first triangle
-    0.5f,  0.5f, 0.0f,  // top right
-    0.5f, -0.5f, 0.0f,  // bottom right
-    -0.5f,  0.5f, 0.0f,  // top left 
-    // second triangle
-    0.5f, -0.5f, 0.0f,  // bottom right
-    -0.5f, -0.5f, 0.0f,  // bottom left
-    -0.5f,  0.5f, 0.0f   // top left
-    */
+        0.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 1.0f, 1.0f,
+        1.0f, 0.0f, 1.0f, 0.0f
+
     };
 
     glGenVertexArrays(1, &this->quadVAO);
@@ -57,12 +48,8 @@ void SpriteRenderer::initRenderData()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-    // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);  
     glBindVertexArray(0);
@@ -79,15 +66,17 @@ glm::vec2 size, float rotate, glm::vec3 color)
       // prepare transformations
       this->shader.Use();
       glm::mat4 model = glm::mat4(1.0f);
-     // model = glm::translate(model, glm::vec3(position, 0.0f)); 
-      model = glm::rotate(model, glm::radians(rotate), glm::vec3(1.0f, 0.0f, 0.0f)); 
+      model = glm::translate(model, glm::vec3(position, 0.0f)); 
+      //model = glm::rotate(model, glm::radians(rotate), glm::vec3(1.0f, 0.0f, 0.0f)); 
+      
       /*
       model = glm::translate(model, glm::vec3(0.5f * size.x, 0.5f * size.y, 0.0f)); 
       model = glm::rotate(model, glm::radians(rotate), glm::vec3(0.0f, 0.0f, 1.0f)); 
       model = glm::translate(model, glm::vec3(-0.5f * size.x, -0.5f * size.y, 0.0f));
       */
       
-      //model = glm::scale(model, glm::vec3(size, 1.0f)); 
+      
+      model = glm::scale(model, glm::vec3(size, 1.0f)); 
     
       this->shader.SetMat4("model", model);
       this->shader.SetVec3("spriteColor", color);

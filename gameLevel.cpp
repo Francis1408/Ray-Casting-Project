@@ -50,56 +50,46 @@ bool GameLevel::IsCompleted()
 
 void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, unsigned int levelWidth, unsigned int levelHeight)
 {
+
+    // calculate dimensions
+    unsigned int height = tileData.size();
+    unsigned int width  = tileData[0].size();
+    float unit_width = levelWidth / static_cast<float>(width);
+    float unit_height = levelHeight / tileData.size();
+
     // read throught the array of tile data
-    
-    for(int i = 0; i < tileData[0].size(); i++)
+    for(int i = 0; i < width; i++)
     {
-        for(int j = 0; j < tileData.size(); j++)
+        for(int j = 0; j < height; j++)
         {
-            printf("%d ", tileData[j][i]);
+            if(tileData[i][j] == 1)
+            {
+                glm::vec2 pos(unit_width * j, unit_height * i);
+                glm::vec2 size(unit_width, unit_height);
+                GameObject obj(pos, size, glm::vec3(1.0f, 1.0f, 1.0f));
+                obj.IsSolid = true;
+                this->Tiles.push_back(obj);
+            }
+            else if(tileData[i][j] > 1)
+            {
+                glm::vec3 color = glm::vec3(1.0f); // original: white
+                if(tileData[i][j] == 2)
+                    color = glm::vec3(0.2f, 0.6f, 1.0f);
+                else if(tileData[i][j] == 3)
+                    color = glm::vec3(0.0f, 0.7f, 0.0f);
+                else if(tileData[i][j] == 4)
+                    color = glm::vec3(0.8f, 0.8f, 0.4f);
+    
+                glm::vec2 pos(unit_width * j, unit_height * i);
+                glm::vec2 size(unit_width, unit_height);
+                this->Tiles.push_back(GameObject(pos, size, color));
+            }
+
+            printf("%d ", tileData[i][j]); // Print map on the terminal
         }
             printf("\n");
         }
 }
 
-
-    /*
-    // calculate dimensions
-    unsigned int height = tileData.size();
-    unsigned int width = tileData[0].size(); // note we can index vector at [0] since this function is only called if height > 0
-    float unit_width = levelWidth / static_cast<float>(width), unit_height = levelHeight / height; 
-    // initialize level tiles based on tileData		
-    for (unsigned int y = 0; y < height; ++y)
-    {
-        for (unsigned int x = 0; x < width; ++x)
-        {
-            // check block type from level data (2D level array)
-            if (tileData[y][x] == 1) // solid
-            {
-                glm::vec2 pos(unit_width * x, unit_height * y);
-                glm::vec2 size(unit_width, unit_height);
-                GameObject obj(pos, size, ResourceManager::GetTexture("block_solid"), glm::vec3(0.8f, 0.8f, 0.7f));
-                obj.IsSolid = true;
-                this->Tiles.push_back(obj);
-            }
-            else if (tileData[y][x] > 1)	// non-solid; now determine its color based on level data
-            {
-                glm::vec3 color = glm::vec3(1.0f); // original: white
-                if (tileData[y][x] == 2)
-                color = glm::vec3(0.2f, 0.6f, 1.0f);
-                else if (tileData[y][x] == 3)
-                color = glm::vec3(0.0f, 0.7f, 0.0f);
-                else if (tileData[y][x] == 4)
-                color = glm::vec3(0.8f, 0.8f, 0.4f);
-                else if (tileData[y][x] == 5)
-                color = glm::vec3(1.0f, 0.5f, 0.0f);
-                
-                glm::vec2 pos(unit_width * x, unit_height * y);
-                glm::vec2 size(unit_width, unit_height);
-                this->Tiles.push_back(GameObject(pos, size, ResourceManager::GetTexture("block"), color));
-            }
-        }
-    }
-    */
 
 

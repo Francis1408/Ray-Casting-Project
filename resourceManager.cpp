@@ -85,9 +85,9 @@ Shader ResourceManager::loadShaderFromFile(const char *vShaderFile, const char *
     const char *fShaderCode = fragmentCode.c_str();
     const char *gShaderCode = geometryCode.c_str();
     // 2. now create shader object from source code
-    printf("vShaderCode: %s\n", vShaderCode);
-    printf("fShaderCode: %s\n", fShaderCode);
-    printf("gShaderCode: %s\n", gShaderCode);
+   // printf("vShaderCode: %s\n", vShaderCode);
+   // printf("fShaderCode: %s\n", fShaderCode);
+   // printf("gShaderCode: %s\n", gShaderCode);
     Shader shader;
     shader.Compile(vShaderCode, fShaderCode, gShaderFile != nullptr ? gShaderCode : nullptr);
     return shader;

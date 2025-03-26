@@ -15,12 +15,19 @@
 class GameLevel
 {
 public:
-    // level state
+    // level map state
     std::vector<GameObject> Tiles;
+
+    // elements
+    std::vector<GameObject> Elements;
+
+    // player initial position
+    glm::vec2 PlayerPosition, PlayerSize;
+
     // constructor
     GameLevel() { }
     // loads level from file
-    void Load(const char *file, unsigned int levelWidth, unsigned int levelHeight);
+    void Load(const char *mapFile, const char *elementFile, unsigned int levelWidth, unsigned int levelHeight);
     // render level
     void Draw(SpriteRenderer &renderer);
     /*
@@ -29,7 +36,7 @@ public:
     */
 private:
     // initialize level from tile data
-    void init(std::vector<std::vector<unsigned int>> tileData, unsigned int levelWidth, unsigned int levelHeight);
+    void init(std::vector<std::vector<unsigned int>> tileData, std::vector<std::vector<unsigned int>> elementData, unsigned int levelWidth, unsigned int levelHeight);
 };
 
 #endif

@@ -6,19 +6,20 @@
 #include <sstream>
 
 
-void GameLevel::Load(const char *file, unsigned int levelWidth, unsigned int levelHeight)
+void GameLevel::Load(const char *mapFile, const char  *elementFile, unsigned int levelWidth, unsigned int levelHeight)
 {
     // clear old data
     this->Tiles.clear();
-    // load from file
+
+    // load from map mapFile
     unsigned int tileCode;
     GameLevel level;
     std::string line;
-    std::ifstream fstream(file);
+    std::ifstream fstream(mapFile);
     std::vector<std::vector<unsigned int>> tileData;
     if (fstream)
     {
-        while (std::getline(fstream, line)) // read each line from level file
+        while (std::getline(fstream, line)) // read each line from level mapFile
         {
             std::istringstream sstream(line);
             std::vector<unsigned int> row;
@@ -26,9 +27,33 @@ void GameLevel::Load(const char *file, unsigned int levelWidth, unsigned int lev
                 row.push_back(tileCode);
             tileData.push_back(row);
         }
-        if (tileData.size() > 0)
-            this->init(tileData, levelWidth, levelHeight);
     }
+
+
+    // clear old data
+    this->Elements.clear();
+
+    // load from element file
+    unsigned int elementCode;
+    std::string line2;
+    std::ifstream fstream2(elementFile);
+    std::vector<std::vector<unsigned int>> elementData;
+    if (fstream2)
+    {
+        while (std::getline(fstream2, line2)) // read each line from level elementFile
+        {
+            std::istringstream sstream(line2);
+            std::vector<unsigned int> row;
+            while (sstream >> elementCode) // read each word separated by spaces
+                row.push_back(elementCode);
+            elementData.push_back(row);
+        }
+
+    }
+
+    if (tileData.size() > 0 && elementData.size() > 0)
+        this->init(tileData, elementData, levelWidth, levelHeight);
+
 }
 
 void GameLevel::Draw(SpriteRenderer &renderer)
@@ -48,19 +73,26 @@ bool GameLevel::IsCompleted()
 }
 */
 
-void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, unsigned int levelWidth, unsigned int levelHeight)
+void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, std::vector<std::vector<unsigned int>> eleData, unsigned int levelWidth, unsigned int levelHeight)
 {
 
-    // calculate dimensions
-    unsigned int height = tileData.size();
-    unsigned int width  = tileData[0].size();
-    float unit_width = levelWidth / static_cast<float>(width);
-    float unit_height = levelHeight / tileData.size();
+   
+    // The map is a square, so the width is the same as the height
+    unsigned int mapWidth  = tileData[0].size();
+    unsigned int mapHeight = tileData.size();
+
+
+    // Size of the walls in the map
+    float unit_width = levelWidth / static_cast<float>(mapWidth);
+    float unit_height = levelHeight / static_cast<float>(mapHeight);
+
+    printf("%f", unit_width);
+    printf("%f", unit_height);
 
     // read throught the array of tile data
-    for(int i = 0; i < width; i++)
+    for( int i = 0;i < mapWidth; i++)
     {
-        for(int j = 0; j < height; j++)
+        for(int j = 0; j < mapHeight; j++)
         {
             if(tileData[i][j] == 1)
             {
@@ -88,7 +120,22 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, unsigned i
             printf("%d ", tileData[i][j]); // Print map on the terminal
         }
             printf("\n");
-        }
+    }
+
+    // The player is 8x smaller than the walls
+    float player_width = unit_width/8;
+    float player_height = unit_height/8;
+
+    // Player position offset
+    float player_pos_y = eleData[0][0] * 8 * player_height;
+    float player_pos_x = eleData[0][1] * 8 * player_width;
+
+    this->PlayerPosition = glm::vec2(player_pos_x, player_pos_y);
+    this->PlayerSize = glm::vec2(player_width, player_height);
+
+    // LOOP TO READ THE ELEMENTS
+    
+
 }
 
 

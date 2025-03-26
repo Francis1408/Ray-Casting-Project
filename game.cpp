@@ -15,7 +15,9 @@
 
 
 SpriteRenderer *Renderer;
-unsigned int NUM_OF_RAYS = 320;
+unsigned int NUM_OF_RAYS = 1;
+
+float planeX = 0, planeY = 0.66; // the 2d raycaster version of camera plane
 
 
 // Player stats
@@ -96,19 +98,34 @@ void Game::ProcessInput(float dt)
     float velocity = Player->velocity *dt;
     float rotSpeed = Player->rotSpeed *dt;
 
+    float mapScale = this->Levels[this->Level].tileSize;
+
+    int mapx, mapy;
+
     if (this -> Keys[GLFW_KEY_W]) { // Apply translation
         
+        
+
         Player->Position.x += velocity * Player->direction.x;
         Player->Position.y += velocity * Player->direction.y;
-        
-       // printf("X: %.2f , Y: %.2f\n", Player->Position.x, Player->Position.y);
+
+        mapx = ((static_cast<int>(Player->Position.x/mapScale)));
+        mapy = ((static_cast<int>(Player->Position.y/mapScale)));
+
+        printf("X: %.2f , Y: %.2f\n", Player->Position.x, Player->Position.y);
+        printf("mapX: %d , mapY: %d\n", mapx, mapy);
     }
     if (this -> Keys[GLFW_KEY_S]) { // Apply rotation
         
         Player->Position.x -= velocity * Player->direction.x;
         Player->Position.y -= velocity * Player->direction.y;
 
-       // printf("X: %.2f , Y: %.2f\n", Player->Position.x, Player->Position.y);
+        mapx = ((static_cast<int>(Player->Position.x/mapScale)));
+        mapy = ((static_cast<int>(Player->Position.y/mapScale)));
+
+        printf("X: %.2f , Y: %.2f\n", Player->Position.x, Player->Position.y);
+        printf("mapX: %d, mapY: %d\n", mapx, mapy);
+        
     }
     if (this -> Keys[GLFW_KEY_A]) { //Apply translation
         
@@ -140,5 +157,25 @@ void Game::Render()
     //Renderer->DrawSprite(glm::vec2(200, 200), glm::vec2(300, 400), 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
     this->Levels[this->Level].Draw(*Renderer);
     Player->Draw(*Renderer);
+
+
+    // RAYCASTING ALGORRITHM
+    
+    // Each interation creates a ray which are distributed throught the plane(screen) space;
+    for(int x = 0; x < NUM_OF_RAYS; x++) {
+        // calculate ray position and direction
+        /*
+        cameraX is the x-coordinate on the camera plane that the current x-coordinate of the screen represents, 
+        done this way so that the right side of the screen will get coordinate 1, the center of the screen gets coordinate 0, 
+        and the left side of the screen gets coordinate -1.
+        */
+        float cameraX = 2 * x / static_cast<float>(NUM_OF_RAYS) - 1; // Distribute symetrically the number of rays on the screen
+        glm::vec2 rayDir = glm::vec2(Player->direction.x + planeX * cameraX,Player->direction.y + planeX * cameraX);
+        
+        // The amount of units to the ray hit the next tile
+        glm::vec2 deltaDist = glm::vec2(std::abs(1/rayDir.x), std::abs(1/rayDir.y));
+
+
+    }
     
 }

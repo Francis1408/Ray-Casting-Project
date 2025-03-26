@@ -86,6 +86,8 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, std::vecto
     float unit_width = levelWidth / static_cast<float>(mapWidth);
     float unit_height = levelHeight / static_cast<float>(mapHeight);
 
+    this->tileSize = unit_width; // Set the proportion size of the walls
+
     printf("%f", unit_width);
     printf("%f", unit_height);
 

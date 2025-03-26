@@ -24,6 +24,9 @@ public:
     // player initial position
     glm::vec2 PlayerPosition, PlayerSize;
 
+    // Tile Size
+    float tileSize;
+
     // constructor
     GameLevel() { }
     // loads level from file

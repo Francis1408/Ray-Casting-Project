@@ -106,7 +106,7 @@ void Game::Init()
 
     // creating a visual look for the player
     glm::vec2 lookPos = glm::vec2(one.PlayerPosition.x + one.PlayerSize.x/4, one.PlayerPosition.y - one.PlayerSize.y*2);
-    look = new GameObject(lookPos, glm::vec2(one.PlayerSize.x/2, + one.PlayerSize.y*2),glm::vec3(1.0f, 1.0f, 0.0f));
+    look = new GameObject(lookPos, glm::vec2(one.PlayerSize.x/2,  (one.PlayerSize.y*5)/2),glm::vec3(1.0f, 1.0f, 0.0f));
     look->Pivot = glm::vec2(0.5f, 1.0f);
 
     // load textures

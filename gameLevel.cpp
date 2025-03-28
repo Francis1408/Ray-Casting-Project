@@ -16,7 +16,7 @@ void GameLevel::Load(const char *mapFile, const char  *elementFile, unsigned int
     GameLevel level;
     std::string line;
     std::ifstream fstream(mapFile);
-    std::vector<std::vector<unsigned int>> tileData;
+    this->tileData;
     if (fstream)
     {
         while (std::getline(fstream, line)) // read each line from level mapFile
@@ -25,7 +25,7 @@ void GameLevel::Load(const char *mapFile, const char  *elementFile, unsigned int
             std::vector<unsigned int> row;
             while (sstream >> tileCode) // read each word separated by spaces
                 row.push_back(tileCode);
-            tileData.push_back(row);
+            this->tileData.push_back(row);
         }
     }
 
@@ -51,8 +51,8 @@ void GameLevel::Load(const char *mapFile, const char  *elementFile, unsigned int
 
     }
 
-    if (tileData.size() > 0 && elementData.size() > 0)
-        this->init(tileData, elementData, levelWidth, levelHeight);
+    if (this->tileData.size() > 0 && elementData.size() > 0)
+        this->init(elementData, levelWidth, levelHeight);
 
 }
 
@@ -73,13 +73,13 @@ bool GameLevel::IsCompleted()
 }
 */
 
-void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, std::vector<std::vector<unsigned int>> eleData, unsigned int levelWidth, unsigned int levelHeight)
+void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned int levelWidth, unsigned int levelHeight)
 {
 
    
     // The map is a square, so the width is the same as the height
-    unsigned int mapWidth  = tileData[0].size();
-    unsigned int mapHeight = tileData.size();
+    unsigned int mapWidth  = this->tileData[0].size();
+    unsigned int mapHeight = this->tileData.size();
 
 
     // Size of the walls in the map
@@ -96,7 +96,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, std::vecto
     {
         for(int j = 0; j < mapHeight; j++)
         {
-            if(tileData[i][j] == 1)
+            if(this->tileData[i][j] >= 1)
             {
                 glm::vec2 pos(unit_width * j, unit_height * i);
                 glm::vec2 size(unit_width, unit_height);
@@ -104,22 +104,8 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, std::vecto
                 obj.IsSolid = true;
                 this->Tiles.push_back(obj);
             }
-            else if(tileData[i][j] > 1)
-            {
-                glm::vec3 color = glm::vec3(1.0f); // original: white
-                if(tileData[i][j] == 2)
-                    color = glm::vec3(0.2f, 0.6f, 1.0f);
-                else if(tileData[i][j] == 3)
-                    color = glm::vec3(0.0f, 0.7f, 0.0f);
-                else if(tileData[i][j] == 4)
-                    color = glm::vec3(0.8f, 0.8f, 0.4f);
-    
-                glm::vec2 pos(unit_width * j, unit_height * i);
-                glm::vec2 size(unit_width, unit_height);
-                this->Tiles.push_back(GameObject(pos, size, color));
-            }
 
-            printf("%d ", tileData[i][j]); // Print map on the terminal
+            printf("%d ", this->tileData[i][j]); // Print map on the terminal
         }
             printf("\n");
     }
@@ -129,8 +115,8 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, std::vecto
     float player_height = unit_height/8;
 
     // Player position offset
-    float player_pos_y = eleData[0][0] * 8 * player_height;
-    float player_pos_x = eleData[0][1] * 8 * player_width;
+    float player_pos_y = eleData[0][0] * unit_height;
+    float player_pos_x = eleData[0][1] * unit_width;
 
     this->PlayerPosition = glm::vec2(player_pos_x, player_pos_y);
     this->PlayerSize = glm::vec2(player_width, player_height);

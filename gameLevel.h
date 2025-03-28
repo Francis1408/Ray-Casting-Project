@@ -18,6 +18,9 @@ public:
     // level map state
     std::vector<GameObject> Tiles;
 
+    // level map data
+    std::vector<std::vector<unsigned int>> tileData;
+
     // elements
     std::vector<GameObject> Elements;
 
@@ -39,7 +42,7 @@ public:
     */
 private:
     // initialize level from tile data
-    void init(std::vector<std::vector<unsigned int>> tileData, std::vector<std::vector<unsigned int>> elementData, unsigned int levelWidth, unsigned int levelHeight);
+    void init(std::vector<std::vector<unsigned int>> elementData, unsigned int levelWidth, unsigned int levelHeight);
 };
 
 #endif

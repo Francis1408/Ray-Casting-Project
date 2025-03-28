@@ -102,13 +102,14 @@ void Game::Init()
     this->Levels.push_back(one);
     this->Level = 0;
 
-    // Creates player instance
-    Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, glm::vec3(1.0f, 1.0f, 0.0f), 50.0f, 5.0f, glm::vec2(0.0f, -1.0f));
+    // Creates player instance                                                              Plane is perpendicular to the direction/ (0.66f) => FOV is 2 * atan(0.66/1.0)= 66° 
+    Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, glm::vec3(1.0f, 1.0f, 0.0f), 50.0f, 5.0f, glm::vec2(-1.0f, 0.0f), glm::vec2(0.0f, 0.66f));
 
     // creating a visual arrow to show the players direction
     glm::vec2 lookPos = glm::vec2(one.PlayerPosition.x + one.PlayerSize.x/4, one.PlayerPosition.y - one.PlayerSize.y*2);
     look = new GameObject(lookPos, glm::vec2(one.PlayerSize.x/2,  (one.PlayerSize.y*5)/2),glm::vec3(1.0f, 1.0f, 0.0f));
     look->Pivot = glm::vec2(0.5f, 1.0f);
+    look->Rotation = atan2(Player->direction.y, Player->direction.x) *  (180.0f / M_PI) + 90.0f;
 
     // load textures
     //ResourceManager::LoadTexture("Textures/awesomeface.png", true, "face");
@@ -131,11 +132,12 @@ void Game::ProcessInput(float dt)
     if (this -> Keys[GLFW_KEY_W]) { // Apply translation
         
         
-    // Apply translation based on the direction of the player
+    // Apply translation based on the position of the player
         Player->Position.x += velocity * Player->direction.x;
         Player->Position.y += velocity * Player->direction.y;
 
-        // ---------- Debug - Apply changes to the direction arrow ----------------
+        
+    // ---------- Debug - Apply changes to the direction arrow ----------------
         look->Position.x = Player->Position.x + Player->Size.x/4;
         look->Position.y = Player->Position.y - Player->Size.y*2;
 
@@ -147,12 +149,12 @@ void Game::ProcessInput(float dt)
     }
     if (this -> Keys[GLFW_KEY_S]) { 
         
-        // Apply translation based on the direction of the player
+    // Apply translation based on the position of the player
         Player->Position.x -= velocity * Player->direction.x;
         Player->Position.y -= velocity * Player->direction.y;
 
 
-        // ---------- Debug - Apply changes to the direction arrow ----------------
+    // ---------- Debug - Apply changes to the direction arrow ----------------
         look->Position.x = Player->Position.x + Player->Size.x/4;
         look->Position.y = Player->Position.y - Player->Size.y*2;
         
@@ -166,13 +168,18 @@ void Game::ProcessInput(float dt)
     if (this -> Keys[GLFW_KEY_A]) { 
         
         float oldDirX = Player->direction.x;
-        
+        float oldPlaneX = Player->plane.x;
 
         // Applies the rotation matrix to rotate the character
         Player->direction.x = Player->direction.x * cos(-rotSpeed) -  Player->direction.y * sin(-rotSpeed);
         Player->direction.y = oldDirX * sin(-rotSpeed) + Player->direction.y * cos(-rotSpeed);
+
+        // Applies rotation matrix to rotate the player plane
+        Player->plane.x = Player->plane.x * cos(-rotSpeed) - Player->plane.y * sin(-rotSpeed);
+        Player->plane.y = oldPlaneX * sin(-rotSpeed) + Player->plane.y * cos(-rotSpeed);
         
-        printf("X: %.2f  Y: %.2f", Player->direction.x, Player->direction.y );
+        printf("DirX: %.2f  DirY: %.2f", Player->direction.x, Player->direction.y );
+        printf(" PlaneX: %.2f  PlaneY: %.2f", Player->plane.x, Player->plane.y );
        
         // ---------- Debug - Apply changes to the direction arrow ----------------
         // It has to add 90 at the end cuz the plane is flipped
@@ -183,13 +190,18 @@ void Game::ProcessInput(float dt)
     if (this -> Keys[GLFW_KEY_D]) { // Apply rotation
         
         float oldDirX = Player->direction.x;
+        float oldPlaneX = Player->plane.x;
 
         // Applies the rotation matrix to rotate the character
-
         Player->direction.x = Player->direction.x * cos(rotSpeed) -  Player->direction.y * sin(rotSpeed);
         Player->direction.y = oldDirX * sin(rotSpeed) + Player->direction.y * cos(rotSpeed);
+
+        // Applies rotation matrix to rotate the player plane
+        Player->plane.x = Player->plane.x * cos(rotSpeed) - Player->plane.y * sin(rotSpeed);
+        Player->plane.y = oldPlaneX * sin(rotSpeed) + Player->plane.y * cos(rotSpeed);
         
-        printf("X: %.2f  Y: %.2f", Player->direction.x, Player->direction.y );
+        printf("DirX: %.2f  DirY: %.2f", Player->direction.x, Player->direction.y );
+        printf(" PlaneX: %.2f  PlaneY: %.2f", Player->plane.x, Player->plane.y );
 
         // ---------- Debug - Apply changes to the direction arrow ----------------
         // It has to add 90 at the end cuz the plane is flipped
@@ -215,21 +227,23 @@ void Game::Render()
 
 
     // RAYCASTING ALGORRITHM
-    /*
     // Each interation creates a ray which are distributed throught the plane(screen) space;
-    for(int x = 0; x < NUM_OF_RAYS; x++) {
+    // Our screen is split in half
+    for(int x = 0; x < Width/2; x++) {
         // calculate ray position and direction
+        
         /*
         cameraX is the x-coordinate on the camera plane that the current x-coordinate of the screen represents, 
         done this way so that the right side of the screen will get coordinate 1, the center of the screen gets coordinate 0, 
         and the left side of the screen gets coordinate -1.
+        */
         float cameraX = 2 * x / static_cast<float>(NUM_OF_RAYS) - 1; // Distribute symetrically the number of rays on the screen
         glm::vec2 rayDir = glm::vec2(Player->direction.x + planeX * cameraX,Player->direction.y + planeX * cameraX);
         
         // The amount of units to the ray hit the next tile
         glm::vec2 deltaDist = glm::vec2(std::abs(1/rayDir.x), std::abs(1/rayDir.y));
-        */
        
        
     }
+}
     

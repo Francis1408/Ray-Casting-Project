@@ -102,9 +102,10 @@ void Game::Init()
     this->Levels.push_back(one);
     this->Level = 0;
 
+    // Creates player instance
     Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, glm::vec3(1.0f, 1.0f, 0.0f), 50.0f, 5.0f, glm::vec2(0.0f, -1.0f));
 
-    // creating a visual look for the player
+    // creating a visual arrow to show the players direction
     glm::vec2 lookPos = glm::vec2(one.PlayerPosition.x + one.PlayerSize.x/4, one.PlayerPosition.y - one.PlayerSize.y*2);
     look = new GameObject(lookPos, glm::vec2(one.PlayerSize.x/2,  (one.PlayerSize.y*5)/2),glm::vec3(1.0f, 1.0f, 0.0f));
     look->Pivot = glm::vec2(0.5f, 1.0f);
@@ -130,10 +131,11 @@ void Game::ProcessInput(float dt)
     if (this -> Keys[GLFW_KEY_W]) { // Apply translation
         
         
-
+    // Apply translation based on the direction of the player
         Player->Position.x += velocity * Player->direction.x;
         Player->Position.y += velocity * Player->direction.y;
 
+        // ---------- Debug - Apply changes to the direction arrow ----------------
         look->Position.x = Player->Position.x + Player->Size.x/4;
         look->Position.y = Player->Position.y - Player->Size.y*2;
 
@@ -143,11 +145,14 @@ void Game::ProcessInput(float dt)
         //printf("X: %.2f , Y: %.2f\n", Player->Position.x, Player->Position.y);
         //printf("mapX: %d , mapY: %d\n", mapx, mapy);
     }
-    if (this -> Keys[GLFW_KEY_S]) { // Apply rotation
+    if (this -> Keys[GLFW_KEY_S]) { 
         
+        // Apply translation based on the direction of the player
         Player->Position.x -= velocity * Player->direction.x;
         Player->Position.y -= velocity * Player->direction.y;
 
+
+        // ---------- Debug - Apply changes to the direction arrow ----------------
         look->Position.x = Player->Position.x + Player->Size.x/4;
         look->Position.y = Player->Position.y - Player->Size.y*2;
         
@@ -158,30 +163,39 @@ void Game::ProcessInput(float dt)
        // printf("mapX: %d, mapY: %d\n", mapx, mapy);
        
     }
-    if (this -> Keys[GLFW_KEY_A]) { //Apply translation
+    if (this -> Keys[GLFW_KEY_A]) { 
         
         float oldDirX = Player->direction.x;
         
-        Player->direction.x = Player->direction.x * cos(rotSpeed) -  Player->direction.y * sin(rotSpeed);
-        Player->direction.y = oldDirX * sin(rotSpeed) + Player->direction.y * cos(rotSpeed);
-        
-       
-       // Debug 
-        look->Rotation = atan2(Player->direction.y, Player->direction.x) *  (180.0f / M_PI);
 
-        printf("angle: %.2f\n",look->Rotation);
+        // Applies the rotation matrix to rotate the character
+        Player->direction.x = Player->direction.x * cos(-rotSpeed) -  Player->direction.y * sin(-rotSpeed);
+        Player->direction.y = oldDirX * sin(-rotSpeed) + Player->direction.y * cos(-rotSpeed);
+        
+        printf("X: %.2f  Y: %.2f", Player->direction.x, Player->direction.y );
+       
+        // ---------- Debug - Apply changes to the direction arrow ----------------
+        // It has to add 90 at the end cuz the plane is flipped
+        look->Rotation = atan2(Player->direction.y, Player->direction.x) *  (180.0f / M_PI) + 90.0f;
+
+       printf(" angle: %.2f\n",look->Rotation);
     }
     if (this -> Keys[GLFW_KEY_D]) { // Apply rotation
         
         float oldDirX = Player->direction.x;
 
-        Player->direction.x = Player->direction.x * cos(-rotSpeed) -  Player->direction.y * sin(-rotSpeed);
-        Player->direction.y = oldDirX * sin(-rotSpeed) + Player->direction.y * cos(-rotSpeed);
+        // Applies the rotation matrix to rotate the character
 
-    
-        look->Rotation = atan2(Player->direction.y, Player->direction.x) *  (180.0f / M_PI);
+        Player->direction.x = Player->direction.x * cos(rotSpeed) -  Player->direction.y * sin(rotSpeed);
+        Player->direction.y = oldDirX * sin(rotSpeed) + Player->direction.y * cos(rotSpeed);
+        
+        printf("X: %.2f  Y: %.2f", Player->direction.x, Player->direction.y );
 
-        printf("angle: %.2f\n",look->Rotation);
+        // ---------- Debug - Apply changes to the direction arrow ----------------
+        // It has to add 90 at the end cuz the plane is flipped
+        look->Rotation = atan2(Player->direction.y, Player->direction.x) *  (180.0f / M_PI) + 90.0f;
+
+        printf(" angle: %.2f\n",look->Rotation);
     }
    
 }

@@ -22,6 +22,7 @@ class Game {
     GameState State;
     bool Keys[1024]; // Array of keys
     unsigned int Width, Height; // Width and Height of the window
+    int action; // Key action type
 
     // Level Maps
     std::vector<GameLevel> Levels;

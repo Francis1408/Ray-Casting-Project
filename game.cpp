@@ -103,15 +103,16 @@ void Game::Init()
     
     
     // load levels
-    GameLevel one; one.Load("Levels/one.lvl", "Levels/one.ele", this->Width/2, this->Height);
+    GameLevel one; one.Load("Levels/two.lvl", "Levels/one.ele", this->Width/2, this->Height);
     this->Levels.push_back(one);
     this->Level = 0;
 
-    // Creates player instance                                                              Plane is perpendicular to the direction/ (0.66f) => FOV is 2 * atan(0.66/1.0)= 66° 
-    Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, glm::vec3(1.0f, 1.0f, 0.0f), 50.0f, 5.0f, glm::vec2(-1.0f, 0.0f), glm::vec2(0.0f, 0.66f));
-
     // Set the map Scale
     mapScale = this->Levels[this->Level].tileSize;
+    
+    // Creates player instance                                                              Plane is perpendicular to the direction/ (0.66f) => FOV is 2 * atan(0.66/1.0)= 66° 
+    Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, glm::vec3(1.0f, 1.0f, 0.0f), mapScale, 5.0f, glm::vec2(-1.0f, 0.0f), glm::vec2(0.0f, 0.66f));
+
 
 
     // creating a visual arrow to show the players direction
@@ -214,6 +215,19 @@ void Game::ProcessInput(float dt)
 
        // printf(" angle: %.2f\n",look->Rotation);
     }
+
+    // Sprint Key
+    // Sprints when the key is pressed
+    if(this->Keys[GLFW_KEY_LEFT_SHIFT] && this->action == GLFW_PRESS) {
+
+        Player->velocity = Player->velocity * 2.0f;
+    }
+
+    // Stops to sprint when the key is released
+    if(this->Keys[GLFW_KEY_LEFT_SHIFT] && this->action == GLFW_RELEASE) {
+
+        Player->velocity = Player->velocity/2.0f;
+    }
    
 }
 
@@ -231,7 +245,7 @@ void Game::Render()
     look->Draw(*Renderer);
 
 
-    // RAYCASTING ALGORRITHM
+    // ===================== RAYCASTING ALGORRITHM =======
 
 
     // Each interation creates a ray which are distributed throught the plane(screen) space;
@@ -326,8 +340,9 @@ void Game::Render()
                 side = 1;
             }
             
+            // THE ORIGINAL COORDINATES ARE FLIPPED, SO THE Y-AXIS IS IN THE TILE DATA WIDTH AND MAPX IN THE TILE DATA HEIGHT
             //Check if ray has hit a wall
-            if(this->Levels[this->Level].tileData[mapy][mapx]) hit = 1;
+            if(this->Levels[this->Level].tileData[mapy][mapx]) hit = 1; 
         }
 
         /*

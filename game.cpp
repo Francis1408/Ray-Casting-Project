@@ -103,7 +103,7 @@ void Game::Init()
     
     
     // load levels
-    GameLevel one; one.Load("Levels/two.lvl", "Levels/one.ele", this->Width/2, this->Height);
+    GameLevel one; one.Load("Levels/one.lvl", "Levels/one.ele", this->Width/2, this->Height);
     this->Levels.push_back(one);
     this->Level = 0;
 
@@ -120,6 +120,7 @@ void Game::Init()
     look->Pivot = glm::vec2(0.5f, 1.0f);
     look->Rotation = atan2(Player->direction.y, Player->direction.x) *  (180.0f / M_PI) + 90.0f;
 
+    printf("DirX: %.2f  DirY: %.2f\n", Player->direction.x, Player->direction.y );
     // load textures
     //ResourceManager::LoadTexture("Textures/awesomeface.png", true, "face");
 }
@@ -180,7 +181,7 @@ void Game::ProcessInput(float dt)
         Player->plane.x = Player->plane.x * cos(rotSpeed) - Player->plane.y * sin(rotSpeed);
         Player->plane.y = oldPlaneX * sin(rotSpeed) + Player->plane.y * cos(rotSpeed);
         
-       // printf("DirX: %.2f  DirY: %.2f", Player->direction.x, Player->direction.y );
+        printf("DirX: %.2f  DirY: %.2f\n", Player->direction.x, Player->direction.y );
         //printf(" PlaneX: %.2f  PlaneY: %.2f", Player->plane.x, Player->plane.y );
        
         // ---------- Debug - Apply changes to the direction arrow ----------------
@@ -204,7 +205,7 @@ void Game::ProcessInput(float dt)
          Player->plane.y = oldPlaneX * sin(-rotSpeed) + Player->plane.y * cos(-rotSpeed);
         
         
-        //printf("DirX: %.2f  DirY: %.2f", Player->direction.x, Player->direction.y );
+         printf("DirX: %.2f  DirY: %.2f\n", Player->direction.x, Player->direction.y );
         //printf(" PlaneX: %.2f  PlaneY: %.2f", Player->plane.x, Player->plane.y );
 
         // ---------- Debug - Apply changes to the direction arrow ----------------
@@ -231,6 +232,8 @@ void Game::Render()
 
 
     // RAYCASTING ALGORRITHM
+
+
     // Each interation creates a ray which are distributed throught the plane(screen) space;
     // Our screen is split in half
     for(int x = 0; x < Width/2; x+= rayDensity) {
@@ -324,7 +327,7 @@ void Game::Render()
             }
             
             //Check if ray has hit a wall
-            if(this->Levels[this->Level].tileData[mapx][mapy]) hit = 1;
+            if(this->Levels[this->Level].tileData[mapy][mapx]) hit = 1;
         }
 
         /*
@@ -353,7 +356,7 @@ void Game::Render()
         // Pick the wall color
         glm::vec3 color;
 
-        switch (this->Levels[this->Level].tileData[mapx][mapy])
+        switch (this->Levels[this->Level].tileData[mapy][mapx])
         {
         case 1: color = glm::vec3(1.0f, 1.0f, 1.0f); break; // White
         case 2: color = glm::vec3(0.0f, 0.0f, 1.0f); break; // Blue

@@ -6,7 +6,7 @@
 #include <sstream>
 
 
-void GameLevel::Load(const char *mapFile, const char  *elementFile, unsigned int levelWidth, unsigned int levelHeight)
+void GameLevel::Load(const char *mapFile, const char  *elementFile, unsigned int screenWidth, unsigned int screenHeight)
 {
     // clear old data
     this->Tiles.clear();
@@ -52,7 +52,7 @@ void GameLevel::Load(const char *mapFile, const char  *elementFile, unsigned int
     }
 
     if (this->tileData.size() > 0 && elementData.size() > 0)
-        this->init(elementData, levelWidth, levelHeight);
+        this->init(elementData, screenWidth, screenHeight);
 
 }
 
@@ -73,7 +73,7 @@ bool GameLevel::IsCompleted()
 }
 */
 
-void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned int levelWidth, unsigned int levelHeight)
+void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned int screenWidth, unsigned int screenHeight)
 {
 
    
@@ -83,18 +83,18 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned in
 
 
     // Size of the walls in the map
-    float unit_width = levelWidth / static_cast<float>(mapWidth);
-    float unit_height = levelHeight / static_cast<float>(mapHeight);
+    float unit_width = screenWidth / static_cast<float>(mapWidth);
+    float unit_height = screenHeight / static_cast<float>(mapHeight);
 
     this->tileSize = unit_width; // Set the proportion size of the walls
 
-    printf("%f", unit_width);
-    printf("%f", unit_height);
+    //printf("%f", unit_width);
+    //printf("%f", unit_height);
 
     // read throught the array of tile data
-    for( int i = 0;i < mapWidth; i++)
+    for( int i = 0;i < mapHeight; i++)
     {
-        for(int j = 0; j < mapHeight; j++)
+        for(int j = 0; j < mapWidth; j++)
         {
             if(this->tileData[i][j] >= 1)
             {
@@ -115,8 +115,8 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned in
     float player_height = unit_height/8;
 
     // Player position offset
-    float player_pos_y = eleData[0][0] * unit_height;
-    float player_pos_x = eleData[0][1] * unit_width;
+    float player_pos_x = eleData[0][0] * unit_width;
+    float player_pos_y = eleData[0][1] * unit_height;
 
     this->PlayerPosition = glm::vec2(player_pos_x, player_pos_y);
     this->PlayerSize = glm::vec2(player_width, player_height);

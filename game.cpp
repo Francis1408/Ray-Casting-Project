@@ -92,7 +92,6 @@ void Game::Init()
     
     // glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->Width), 
     //    static_cast<float>(this->Height), 0.0f, -1.0f, 1.0f);
-    glm::mat4 view = glm::mat4(1.0f);
     
     ResourceManager::GetShader("coordinate").Use().SetInt("image", 0);
     ResourceManager::GetShader("coordinate").SetMat4("projection", projection);
@@ -101,9 +100,20 @@ void Game::Init()
     Shader coordinateShader = ResourceManager::GetShader("coordinate");
     Renderer = new SpriteRenderer(coordinateShader);
     
+
+    // Load textures
+    ResourceManager::LoadTexture("Textures/bluestone.png", false, "bluestone");
+    ResourceManager::LoadTexture("Textures/colorstone.png", false, "colorstone");
+    ResourceManager::LoadTexture("Textures/eagle.png", false, "eagle");
+    ResourceManager::LoadTexture("Textures/greystone.png", false, "greystone");
+    ResourceManager::LoadTexture("Textures/mossy.png", false, "mossy");
+    ResourceManager::LoadTexture("Textures/purplestone.png", false, "purplestone");
+    ResourceManager::LoadTexture("Textures/redbrick.png", false, "redbrick");
+    ResourceManager::LoadTexture("Textures/wood.png", false, "wood");
+
     
     // load levels
-    GameLevel one; one.Load("Levels/two.lvl", "Levels/one.ele", this->Width/2, this->Height);
+    GameLevel one; one.Load("Levels/one.lvl", "Levels/one.ele", this->Width/2, this->Height);
     this->Levels.push_back(one);
     this->Level = 0;
 
@@ -111,13 +121,13 @@ void Game::Init()
     mapScale = this->Levels[this->Level].tileSize;
     
     // Creates player instance                                                              Plane is perpendicular to the direction/ (0.66f) => FOV is 2 * atan(0.66/1.0)= 66° 
-    Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, glm::vec3(1.0f, 1.0f, 0.0f), mapScale, 5.0f, glm::vec2(-1.0f, 0.0f), glm::vec2(0.0f, 0.66f));
+    Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, ResourceManager::GetTexture("wood"), glm::vec3(1.0f, 1.0f, 0.0f), mapScale, 5.0f, glm::vec2(-1.0f, 0.0f), glm::vec2(0.0f, 0.66f));
 
 
 
     // creating a visual arrow to show the players direction
     glm::vec2 lookPos = glm::vec2(one.PlayerPosition.x + one.PlayerSize.x/4, one.PlayerPosition.y - one.PlayerSize.y*2);
-    look = new GameObject(lookPos, glm::vec2(one.PlayerSize.x/2,  (one.PlayerSize.y*5)/2),glm::vec3(1.0f, 1.0f, 0.0f));
+    look = new GameObject(lookPos, glm::vec2(one.PlayerSize.x/2,  (one.PlayerSize.y*5)/2), ResourceManager::GetTexture("wood"), glm::vec3(1.0f, 1.0f, 0.0f));
     look->Pivot = glm::vec2(0.5f, 1.0f);
     look->Rotation = atan2(Player->direction.y, Player->direction.x) *  (180.0f / M_PI) + 90.0f;
 
@@ -250,8 +260,13 @@ void Game::Render()
     look->Draw(*Renderer);
 
 
-    // ===================== RAYCASTING ALGORRITHM =======
+   
+    
+}
 
+
+ void Game::RayCasting() {
+// ===================== RAYCASTING ALGORRITHM =====================
 
     // Each interation creates a ray which are distributed throught the plane(screen) space;
     // Our screen is split in half
@@ -361,11 +376,11 @@ void Game::Render()
 
         float perpWallDistance;
 
-        if(side == 0) perpWallDistance = (sideDistX - deltaDistX) * mapScale;  // Goes one step back
-        else          perpWallDistance = (sideDistY - deltaDistY) * mapScale; // Goes one step back
+        if(side == 0) perpWallDistance = (sideDistX - deltaDistX);  // Goes one step back
+        else          perpWallDistance = (sideDistY - deltaDistY); // Goes one step back
 
         //calculate lowest and highest pixel to fill in current stripe
-        float lineHeight = (Height/perpWallDistance) * mapScale;
+        float lineHeight = (Height/perpWallDistance);
 
         //calculate lowest and highest pixel to fill in current stripe
         float drawStart = -lineHeight / 2 + Height / 2;
@@ -396,11 +411,10 @@ void Game::Render()
         // drawStart = Y Starting coordinate 
         // Size = (Density of the ray = 1 pixel, drawEnd - drawStart)
 
-       wall = new GameObject(glm::vec2(x+ Width/2, drawStart), glm::vec2(rayDensity, drawEnd - drawStart),color);
+      // wall = new GameObject(glm::vec2(x+ Width/2, drawStart), glm::vec2(rayDensity, drawEnd - drawStart),color);
 
         // Draw wall slice
-       wall->Draw(*Renderer);
-
+       //wall->Draw(*Renderer);
+        
     }
 }
-    

@@ -100,7 +100,22 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned in
             {
                 glm::vec2 pos(unit_width * j, unit_height * i);
                 glm::vec2 size(unit_width, unit_height);
-                GameObject obj(pos, size, glm::vec3(1.0f, 1.0f, 1.0f));
+
+                Texture2D pickedTexture;
+
+                switch(this->tileData[i][j]) {
+                    case 1: pickedTexture = ResourceManager::GetTexture("bluestone");  break;
+                    case 2: pickedTexture = ResourceManager::GetTexture("colorstone"); break;
+                    case 3: pickedTexture = ResourceManager::GetTexture("eagle");      break;
+                    case 4: pickedTexture = ResourceManager::GetTexture("greystone");  break;
+                    case 5: pickedTexture = ResourceManager::GetTexture("mossy");      break;
+                    case 6: pickedTexture = ResourceManager::GetTexture("purplestone");break;
+                    case 7: pickedTexture = ResourceManager::GetTexture("redbrick");   break;
+                    case 8: pickedTexture = ResourceManager::GetTexture("wood");       break;
+                    default:pickedTexture = ResourceManager::GetTexture("bluestone");  break;
+                }
+
+                GameObject obj(pos, size, pickedTexture, glm::vec3(1.0f, 1.0f, 1.0f));
                 obj.IsSolid = true;
                 this->Tiles.push_back(obj);
             }

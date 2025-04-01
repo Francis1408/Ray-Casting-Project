@@ -42,31 +42,25 @@ void SpriteRenderer::initRenderData()
     glGenVertexArrays(1, &this->quadVAO);
     glGenBuffers(1, &VBO);
 
-    glBindVertexArray(this->quadVAO);
-    
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
+    
     // position attribute
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glBindVertexArray(this->quadVAO);
     glEnableVertexAttribArray(0);
-
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);  
     glBindVertexArray(0);
 }
 
-/*
-void SpriteRenderer::DrawSprite(Texture2D &texture, glm::vec2 position, 
-    glm::vec2 size, float rotate, glm::vec3 color)
-    */
     
-void SpriteRenderer::DrawSprite(glm::vec2 position, 
+void SpriteRenderer::DrawSprite(Texture2D &texture, glm::vec2 position, 
 glm::vec2 size, float rotate, glm::vec3 color, glm::vec2 pivot)
   {
       // prepare transformations
       this->shader.Use();
       glm::mat4 model = glm::mat4(1.0f);
-      
+
       // 1. Translate to the sprite's position
         model = glm::translate(model, glm::vec3(position, 0.0f));
 
@@ -88,7 +82,7 @@ glm::vec2 size, float rotate, glm::vec3 color, glm::vec2 pivot)
       this->shader.SetVec3("spriteColor", color);
     
       glActiveTexture(GL_TEXTURE0);
-      //texture.Bind();
+      texture.Bind();
   
       glBindVertexArray(this->quadVAO);
       glDrawArrays(GL_TRIANGLES, 0, 6);

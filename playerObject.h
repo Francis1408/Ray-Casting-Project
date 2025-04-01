@@ -19,7 +19,7 @@ class PlayerObject : public GameObject {
     // Constructor
     PlayerObject();
 
-    PlayerObject(glm::vec2 pos, glm::vec2 size, glm::vec3 color, float velocity, float rotSpeed, glm::vec2 direction, glm::vec2 plane);
+    PlayerObject(glm::vec2 pos, glm::vec2 size, Texture2D sprite, glm::vec3 color, float velocity, float rotSpeed, glm::vec2 direction, glm::vec2 plane);
 
 
 };

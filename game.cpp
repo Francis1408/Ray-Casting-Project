@@ -217,18 +217,23 @@ void Game::ProcessInput(float dt)
     }
 
     // Sprint Key
-    // Sprints when the key is pressed
-    if(this->Keys[GLFW_KEY_LEFT_SHIFT] && this->action == GLFW_PRESS) {
+    if(this->Keys[GLFW_KEY_LEFT_SHIFT]) {
+        // Sprints when the key is pressed
+        if(!Player->isRunning) {
 
-        Player->velocity = Player->velocity * 2.0f;
+            printf("Pressionou\n");
+            Player->velocity = Player->velocity * 2.0f;
+            Player->isRunning = true;
+        }
     }
 
-    // Stops to sprint when the key is released
-    if(this->Keys[GLFW_KEY_LEFT_SHIFT] && this->action == GLFW_RELEASE) {
-
-        Player->velocity = Player->velocity/2.0f;
+    // Stops to sprint when the key is released once
+    if(!this->Keys[GLFW_KEY_LEFT_SHIFT] && Player->isRunning) {
+       printf("Soltou\n");
+       Player->velocity = Player->velocity/2.0f;
+       Player->isRunning = false;
     }
-   
+
 }
 
 void Game::Render()

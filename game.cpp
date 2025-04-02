@@ -194,7 +194,7 @@ void Game::ProcessInput(float dt)
         Player->plane.x = Player->plane.x * cos(rotSpeed) - Player->plane.y * sin(rotSpeed);
         Player->plane.y = oldPlaneX * sin(rotSpeed) + Player->plane.y * cos(rotSpeed);
         
-        printf("DirX: %.2f  DirY: %.2f\n", Player->direction.x, Player->direction.y );
+        //printf("DirX: %.2f  DirY: %.2f\n", Player->direction.x, Player->direction.y );
         //printf(" PlaneX: %.2f  PlaneY: %.2f", Player->plane.x, Player->plane.y );
        
         // ---------- Debug - Apply changes to the direction arrow ----------------
@@ -218,7 +218,7 @@ void Game::ProcessInput(float dt)
          Player->plane.y = oldPlaneX * sin(-rotSpeed) + Player->plane.y * cos(-rotSpeed);
         
         
-         printf("DirX: %.2f  DirY: %.2f\n", Player->direction.x, Player->direction.y );
+         //printf("DirX: %.2f  DirY: %.2f\n", Player->direction.x, Player->direction.y );
         //printf(" PlaneX: %.2f  PlaneY: %.2f", Player->plane.x, Player->plane.y );
 
         // ---------- Debug - Apply changes to the direction arrow ----------------
@@ -233,7 +233,7 @@ void Game::ProcessInput(float dt)
         // Sprints when the key is pressed
         if(!Player->isRunning) {
 
-            printf("Pressionou\n");
+            //printf("Pressionou\n");
             Player->velocity = Player->velocity * 2.0f;
             Player->isRunning = true;
         }
@@ -241,7 +241,7 @@ void Game::ProcessInput(float dt)
 
     // Stops to sprint when the key is released once
     if(!this->Keys[GLFW_KEY_LEFT_SHIFT] && Player->isRunning) {
-       printf("Soltou\n");
+      // printf("Soltou\n");
        Player->velocity = Player->velocity/2.0f;
        Player->isRunning = false;
     }
@@ -383,7 +383,7 @@ void Game::Render()
         else          perpWallDistance = (sideDistY - deltaDistY); // Goes one step back
 
         //calculate lowest and highest pixel to fill in current stripe
-        float lineHeight = (Height/perpWallDistance);
+        float lineHeight = (Height/(perpWallDistance));
 
         //calculate lowest and highest pixel to fill in current stripe
         float drawStart = -lineHeight / 2 + Height / 2;
@@ -414,6 +414,9 @@ void Game::Render()
 
         // Sets the uniform to draw only the pre defined slice
         ResourceManager::GetShader("coordinate").Use().SetFloat("texXOffset", texXNormalized);
+
+        // Create shading
+        if(side == 1) color = glm::vec3(0.5f, 0.5f, 0.5f);
     
         // Create a gameObject to draw on the screen
 

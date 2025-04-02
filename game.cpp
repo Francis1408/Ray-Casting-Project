@@ -28,7 +28,7 @@ GameObject  *wall;
 float mapScale; 
 
 // RayDensity = How thick is each wall slice
-int rayDensity = 1;
+int rayDensity = 2;
 
 
 Game::Game(unsigned int width, unsigned int height) 
@@ -257,10 +257,10 @@ void Game::Render()
    // Texture2D myTexture;
    // myTexture = ResourceManager::GetTexture("eagle");
    // Renderer->DrawSprite(myTexture,glm::vec2(200, 200), glm::vec2(300, 400), 45.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-    this->Levels[this->Level].Draw(*Renderer);
-    Player->Draw(*Renderer);
-    look->Draw(*Renderer);
-
+   // this->Levels[this->Level].Draw(*Renderer);
+   // Player->Draw(*Renderer);
+   // look->Draw(*Renderer);
+    RayCasting();
 
    
     
@@ -270,6 +270,7 @@ void Game::Render()
  void Game::RayCasting() {
 // ===================== RAYCASTING ALGORRITHM =====================
 
+    Texture2D mytexture = ResourceManager::GetTexture("eagle");
     // Each interation creates a ray which are distributed throught the plane(screen) space;
     // Our screen is split in half
     for(int x = 0; x < Width/2; x+= rayDensity) {
@@ -391,32 +392,39 @@ void Game::Render()
         if(drawEnd >= Height) drawEnd = Height - 1;
 
         // Pick the wall color
-        glm::vec3 color;
+        glm::vec3 color = glm::vec3(1.0, 1.0, 1.0);
 
-        switch (this->Levels[this->Level].tileData[mapy][mapx])
-        {
-        case 1: color = glm::vec3(1.0f, 1.0f, 1.0f); break; // White
-        case 2: color = glm::vec3(0.0f, 0.0f, 1.0f); break; // Blue
-        case 3: color = glm::vec3(1.0f, 0.0f, 0.0f); break; // Red
-        case 4: color = glm::vec3(0.0f, 1.0f, 0.0f); break; // Green
-        case 5: color = glm::vec3(1.0f, 1.0f, 0.0f); break; // Yellow
-        
-        default:  color = glm::vec3(1.0f, 1.0f, 1.0f); break; // White
-        }
+        // =============== TEXTURING HANDLING ==================
 
-        // Aplying shading for the walls
-        if(side == 1) color = color * glm::vec3(0.5f, 0.5f, 0.5f);
+        // Calculate the position of the ray referenced to the wall (player position + raydist*distance offset)]
+        float wallX; // where exactly the wall was hit
+        if(side == 0) wallX = (Player->Position.y/mapScale) + perpWallDistance * rayDir.y;
+        else          wallX = (Player->Position.x/mapScale) + perpWallDistance * rayDir.x;
 
+        wallX -= floor(wallX); // Lower approx of the wall position
+
+        // x coordinate on the texture
+        float texX = wallX * static_cast<float>(mytexture.Width);
+
+        // Corrects the flipping textures
+        //if(side == 0 && rayDir.x > 0) texX = static_cast<float>(mytexture.Width) - texX - 1.0f;
+        //if(side == 1 && rayDir.x < 0) texX = static_cast<float>(mytexture.Width) - texX - 1.0f;
+
+        float texXNormalized = texX/static_cast<float>(mytexture.Width);
+
+        // Sets the uniform to draw only the pre defined slice
+        ResourceManager::GetShader("coordinate").Use().SetFloat("texXOffset", texXNormalized);
+    
         // Create a gameObject to draw on the screen
 
         // X + Width/2 = Starting X-coordinate
         // drawStart = Y Starting coordinate 
         // Size = (Density of the ray = 1 pixel, drawEnd - drawStart)
 
-      // wall = new GameObject(glm::vec2(x+ Width/2, drawStart), glm::vec2(rayDensity, drawEnd - drawStart),color);
+        wall = new GameObject(glm::vec2(x+ Width/2, drawStart), glm::vec2(rayDensity, drawEnd - drawStart),mytexture, color);
 
         // Draw wall slice
-       //wall->Draw(*Renderer);
+        wall->Draw(*Renderer);
         
     }
 }

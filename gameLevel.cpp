@@ -115,14 +115,16 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned in
                     default:pickedTexture = ResourceManager::GetTexture("bluestone");  break;
                 }
 
-                GameObject obj(pos, size, pickedTexture, glm::vec3(1.0f, 1.0f, 1.0f));
+
+
+                GameObject obj(pos, size, pickedTexture, glm::vec3(1.0f));
                 obj.IsSolid = true;
                 this->Tiles.push_back(obj);
             }
 
-            printf("%d ", this->tileData[i][j]); // Print map on the terminal
+           // printf("%d ", this->tileData[i][j]); // Print map on the terminal
         }
-            printf("\n");
+           // printf("\n");
     }
 
     // The player is 8x smaller than the walls

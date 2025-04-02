@@ -111,7 +111,9 @@ void Game::Init()
     ResourceManager::LoadTexture("Textures/redbrick.png", false, "redbrick");
     ResourceManager::LoadTexture("Textures/wood.png", false, "wood");
 
-    
+  
+    std::cout << ResourceManager::Textures.size() << std::endl;
+
     // load levels
     GameLevel one; one.Load("Levels/one.lvl", "Levels/one.ele", this->Width/2, this->Height);
     this->Levels.push_back(one);
@@ -252,9 +254,9 @@ void Game::Render()
     // Draw Level Map in the first half of the screen
 
 
-    //Texture2D myTexture;
-   // myTexture = ResourceManager::GetTexture("face");
-    //Renderer->DrawSprite(glm::vec2(200, 200), glm::vec2(300, 400), 45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+   // Texture2D myTexture;
+   // myTexture = ResourceManager::GetTexture("eagle");
+   // Renderer->DrawSprite(myTexture,glm::vec2(200, 200), glm::vec2(300, 400), 45.0f, glm::vec3(1.0f, 1.0f, 1.0f));
     this->Levels[this->Level].Draw(*Renderer);
     Player->Draw(*Renderer);
     look->Draw(*Renderer);

@@ -412,8 +412,20 @@ void Game::Render()
 
         float texXNormalized = texX/static_cast<float>(mytexture.Width);
 
+        // Handling the Y-axis texture clamping when the line is bigger than the screen
+        float textureYOffset = 0.0f;
+        /*
+        if(lineHeight > static_cast<float>(Height)) {
+            
+        float scaleFactor = static_cast<float>(Height) / lineHeight;
+        textureYOffset = (1.0f - scaleFactor)/ 2.0f;
+    }
+    */
+
         // Sets the uniform to draw only the pre defined slice
         ResourceManager::GetShader("coordinate").Use().SetFloat("texXOffset", texXNormalized);
+        ResourceManager::GetShader("coordinate").Use().SetFloat("texYOffset", textureYOffset);
+        ResourceManager::GetShader("coordinate").Use().SetFloat("texScale", static_cast<float>(mytexture.Height)/ lineHeight);
 
         // Create shading
         if(side == 1) color = glm::vec3(0.5f, 0.5f, 0.5f);

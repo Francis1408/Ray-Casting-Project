@@ -15,11 +15,14 @@
 class GameLevel
 {
 public:
-    // level map state
+    // level map state 2D
     std::vector<GameObject> Tiles;
 
     // level map data
     std::vector<std::vector<unsigned int>> tileData;
+
+    // Matrix that contains the tiles infors
+    std::vector<std::vector<GameObject>> tileInfo;
 
     // elements
     std::vector<GameObject> Elements;

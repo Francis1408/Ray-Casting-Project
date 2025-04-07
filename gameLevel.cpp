@@ -10,6 +10,7 @@ void GameLevel::Load(const char *mapFile, const char  *elementFile, unsigned int
 {
     // clear old data
     this->Tiles.clear();
+    this->tileInfo.clear();
 
     // load from map mapFile
     unsigned int tileCode;
@@ -17,15 +18,20 @@ void GameLevel::Load(const char *mapFile, const char  *elementFile, unsigned int
     std::string line;
     std::ifstream fstream(mapFile);
     this->tileData;
+    this->tileInfo;
     if (fstream)
     {
         while (std::getline(fstream, line)) // read each line from level mapFile
         {
             std::istringstream sstream(line);
             std::vector<unsigned int> row;
-            while (sstream >> tileCode) // read each word separated by spaces
+            std::vector<GameObject> tileRow;
+            while (sstream >> tileCode) {
                 row.push_back(tileCode);
+                tileRow.push_back(GameObject()); // Create empty gameObjects
+            } // read each word separated by spaces
             this->tileData.push_back(row);
+            this->tileInfo.push_back(tileRow);
         }
     }
 
@@ -119,7 +125,12 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned in
 
                 GameObject obj(pos, size, pickedTexture, glm::vec3(1.0f));
                 obj.IsSolid = true;
+                this->tileInfo[i][j] = obj; // Save the tile info
                 this->Tiles.push_back(obj);
+            }
+            else {
+
+                this->tileInfo[i][j].IsSolid = false; // Set the tile as not solid
             }
 
            // printf("%d ", this->tileData[i][j]); // Print map on the terminal

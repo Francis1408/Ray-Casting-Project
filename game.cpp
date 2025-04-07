@@ -115,7 +115,7 @@ void Game::Init()
     std::cout << ResourceManager::Textures.size() << std::endl;
 
     // load levels
-    GameLevel one; one.Load("Levels/one.lvl", "Levels/one.ele", this->Width/2, this->Height);
+    GameLevel one; one.Load("Levels/two.lvl", "Levels/one.ele", this->Width/2, this->Height);
     this->Levels.push_back(one);
     this->Level = 0;
 
@@ -270,7 +270,9 @@ void Game::Render()
  void Game::RayCasting() {
 // ===================== RAYCASTING ALGORRITHM =====================
 
-    Texture2D mytexture = ResourceManager::GetTexture("eagle");
+    
+    // Set a variable to store the texture
+    Texture2D currentTexture;
     // Each interation creates a ray which are distributed throught the plane(screen) space;
     // Our screen is split in half
     for(int x = 0; x < Width/2; x+= rayDensity) {
@@ -395,11 +397,17 @@ void Game::Render()
         // if(drawStart < 0) drawStart = 0;
         // if(drawEnd >= Height) drawEnd = Height - 1;
 
-        float step = 1.0f * mytexture.Height / lineHeight; // The step to take in the texture
+        
+        // =============== TEXTURING HANDLING ==================
+        
+        // Load the texture from the tile
+        currentTexture = this->Levels[this->Level].tileInfo[mapy][mapx].Sprite;
+
+        
+        float step = 1.0f * currentTexture.Height / lineHeight; // The step to take in the texture
         // Pick the wall color
         glm::vec3 color = glm::vec3(1.0, 1.0, 1.0);
 
-        // =============== TEXTURING HANDLING ==================
 
         // Calculate the position of the ray referenced to the wall (player position + raydist*distance offset)]
         float wallX; // where exactly the wall was hit
@@ -409,13 +417,13 @@ void Game::Render()
         wallX -= floor(wallX); // Lower approx of the wall position
 
         // x coordinate on the texture
-        float texX = wallX * static_cast<float>(mytexture.Width);
+        float texX = wallX * static_cast<float>(currentTexture.Width);
 
         // Corrects the flipping textures
         //if(side == 0 && rayDir.x > 0) texX = static_cast<float>(mytexture.Width) - texX - 1.0f;
         //if(side == 1 && rayDir.x < 0) texX = static_cast<float>(mytexture.Width) - texX - 1.0f;
 
-        float texXNormalized = texX/static_cast<float>(mytexture.Width);
+        float texXNormalized = texX/static_cast<float>(currentTexture.Width);
 
 
         // Sets the uniform to draw only the pre defined slice
@@ -423,6 +431,8 @@ void Game::Render()
 
         // Create shading
         if(side == 1) color = glm::vec3(0.5f, 0.5f, 0.5f);
+
+   
     
         // Create a gameObject to draw on the screen
 
@@ -430,7 +440,7 @@ void Game::Render()
         // drawStart = Y Starting coordinate 
         // Size = (Density of the ray = 1 pixel, drawEnd - drawStart)
 
-        wall = new GameObject(glm::vec2(x+ Width/2, drawStart), glm::vec2(rayDensity, drawEnd - drawStart),mytexture, color);
+        wall = new GameObject(glm::vec2(x+ Width/2, drawStart), glm::vec2(rayDensity, drawEnd - drawStart),currentTexture, color);
 
         // Draw wall slice
         wall->Draw(*Renderer);

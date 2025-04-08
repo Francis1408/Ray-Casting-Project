@@ -42,6 +42,7 @@ class Game {
     void Update(float dt);
     void Render();
     void RayCasting();
+    void FloorCasting();
 
 
 };

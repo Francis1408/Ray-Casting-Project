@@ -115,7 +115,7 @@ void Game::Init()
     std::cout << ResourceManager::Textures.size() << std::endl;
 
     // load levels
-    GameLevel one; one.Load("Levels/two.lvl", "Levels/one.ele", this->Width/2, this->Height);
+    GameLevel one; one.Load("Levels/one.lvl", "Levels/one.ele", this->Width/2, this->Height);
     this->Levels.push_back(one);
     this->Level = 0;
 
@@ -445,5 +445,38 @@ void Game::Render()
         // Draw wall slice
         wall->Draw(*Renderer);
         
+    }
+    
+}
+
+void Game::FloorCasting() {
+
+    for(int y = Height/2 + 1; y < Height; y+= rayDensity) { // Mid to bottom of the screen
+
+        // Calculate the directions from the extreme rays
+        // Leftmost ray (x = 0) and rightmost ray ( x = w/2)
+        glm::vec2 rayDirLeft = glm::vec2(Player->direction.x - Player->plane.x, Player->direction.y - Player->plane.y);
+        glm::vec2 rayDirRight = glm::vec2(Player->direction.x + Player->plane.x, Player->direction.y + Player->plane.y);
+
+        // Current Y position of the ray compared to the center of the screen
+        int p = y - Height/2;
+
+        // Vertical position of the camera in pixels
+        float posZ = 0.5 * Height; // Camera on the center of the screen
+        /*
+        Horizontal distance from the camera to the floor. Based on triangle equivalence:
+        rowDistance/1 = posZ/p;  Since the distance from the camera to the screen is always 1
+        */
+        float rowDistance = posZ/p;
+
+        // calculate the real world step vector we have to add for each x (parallel to camera plane)
+        // adding step by step avoids multiplications with a weight in the inner loop
+        float floorStepX = rowDistance * (rayDirRight.x - rayDirLeft.x) / (Width/2);
+        float floorStepY = rowDistance * (rayDirRight.y - rayDirLeft.y) / (Width/2);
+
+        // real world coordinates of the leftmost column. This will be updated as we step to the right.
+        float floorX = Player->Position.x + rowDistance * rayDirLeft.x;
+        float floorY = Player->Position.y + rowDistance * rayDirLeft.y;
+
     }
 }

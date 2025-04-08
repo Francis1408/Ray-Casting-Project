@@ -13,7 +13,7 @@ class PlayerObject : public GameObject {
 
     float velocity;
     float rotSpeed;
-    glm::vec2 direction,plane; // The plane must be pependicular to the direction
+    glm::vec2 direction, plane; // The plane must be pependicular to the direction
     bool isRunning;
 
     // Constructor

@@ -14,15 +14,16 @@
 
 
 
-SpriteRenderer *Renderer;
-
+SpriteRenderer *WallRenderer;
+SpriteRenderer *FloorRenderer;
 
 
 // Player stats
 PlayerObject *Player;
 
 GameObject  *look;
-GameObject  *wall;
+GameObject  *wallObj;
+GameObject  *floorObj;
 
 //Scale of the level map in the grid size
 float mapScale; 
@@ -39,14 +40,14 @@ Game::Game(unsigned int width, unsigned int height)
 
 Game::~Game()
 {
-    delete Renderer;
+    delete WallRenderer;
 }
 
 void Game::Init()
 {
     // load shaders
-    ResourceManager::LoadShader("Shaders/shaderCoordinate.vs", "Shaders/shaderCoordinate.fs", nullptr, "coordinate");
-
+    ResourceManager::LoadShader("Shaders/shaderCoordinate.vs", "Shaders/shaderWall.fs", nullptr, "wall");
+    ResourceManager::LoadShader("Shaders/shaderCoordinate.vs", "Shaders/shaderFloor.fs", nullptr, "floor");
 
 
     // Initial Position
@@ -93,12 +94,17 @@ void Game::Init()
     // glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->Width), 
     //    static_cast<float>(this->Height), 0.0f, -1.0f, 1.0f);
     
-    ResourceManager::GetShader("coordinate").Use().SetInt("image", 0);
-    ResourceManager::GetShader("coordinate").SetMat4("projection", projection);
+    ResourceManager::GetShader("wall").Use().SetInt("image", 0);
+    ResourceManager::GetShader("wall").SetMat4("projection", projection);
+    ResourceManager::GetShader("floor").Use().SetInt("image", 0);
+    ResourceManager::GetShader("floor").SetMat4("projection", projection);
     
     // set render-specific controls
-    Shader coordinateShader = ResourceManager::GetShader("coordinate");
-    Renderer = new SpriteRenderer(coordinateShader);
+    Shader Shader = ResourceManager::GetShader("wall");
+    WallRenderer = new SpriteRenderer(Shader);
+
+    Shader = ResourceManager::GetShader("floor");
+    FloorRenderer = new SpriteRenderer(Shader);
     
 
     // Load textures
@@ -260,6 +266,7 @@ void Game::Render()
    // this->Levels[this->Level].Draw(*Renderer);
    // Player->Draw(*Renderer);
    // look->Draw(*Renderer);
+    FloorCasting();
     RayCasting();
 
    
@@ -427,7 +434,7 @@ void Game::Render()
 
 
         // Sets the uniform to draw only the pre defined slice
-        ResourceManager::GetShader("coordinate").Use().SetFloat("texXOffset", texXNormalized);
+        ResourceManager::GetShader("wall").Use().SetFloat("texXOffset", texXNormalized);
 
         // Create shading
         if(side == 1) color = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -440,16 +447,19 @@ void Game::Render()
         // drawStart = Y Starting coordinate 
         // Size = (Density of the ray = 1 pixel, drawEnd - drawStart)
 
-        wall = new GameObject(glm::vec2(x+ Width/2, drawStart), glm::vec2(rayDensity, drawEnd - drawStart),currentTexture, color);
+        wallObj = new GameObject(glm::vec2(x+ Width/2, drawStart), glm::vec2(rayDensity, drawEnd - drawStart),currentTexture, color);
 
         // Draw wall slice
-        wall->Draw(*Renderer);
+        wallObj->Draw(*WallRenderer);
         
     }
     
 }
 
 void Game::FloorCasting() {
+
+    Texture2D myTexture = ResourceManager::GetTexture("greystone");
+    
 
     for(int y = Height/2 + 1; y < Height; y+= rayDensity) { // Mid to bottom of the screen
 
@@ -470,13 +480,18 @@ void Game::FloorCasting() {
         float rowDistance = posZ/p;
 
         // calculate the real world step vector we have to add for each x (parallel to camera plane)
-        // adding step by step avoids multiplications with a weight in the inner loop
-        float floorStepX = rowDistance * (rayDirRight.x - rayDirLeft.x) / (Width/2);
-        float floorStepY = rowDistance * (rayDirRight.y - rayDirLeft.y) / (Width/2);
-
+        // By multiplying them by the rendering range (screen size), we get the rightmost coordinate from the slice
+        glm::vec2 floorStep = glm::vec2(rowDistance * (rayDirRight.x - rayDirLeft.x) / (Width/2), rowDistance * (rayDirRight.y - rayDirLeft.y) / (Width/2));
+        
         // real world coordinates of the leftmost column. This will be updated as we step to the right.
-        float floorX = Player->Position.x + rowDistance * rayDirLeft.x;
-        float floorY = Player->Position.y + rowDistance * rayDirLeft.y;
+        glm::vec2 floor = glm::vec2(Player->Position.x + rowDistance * rayDirLeft.x, Player->Position.y + rowDistance * rayDirLeft.y);
+        
 
+         // Sets the uniform to draw the correct coordinates from the horizontal slice
+         ResourceManager::GetShader("floor").Use().SetVec2("floor", floor);
+         ResourceManager::GetShader("floor").Use().SetVec2("floorStep", floorStep);
+
+         floorObj = new GameObject(glm::vec2(Width/2, y), glm::vec2(Width, rayDensity),myTexture, glm::vec3(1.0f, 1.0f, 1.0f));
+         floorObj->Draw(*FloorRenderer);
     }
 }

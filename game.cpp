@@ -13,7 +13,6 @@
 #include <vector> 
 
 
-
 SpriteRenderer *WallRenderer;
 SpriteRenderer *FloorRenderer;
 
@@ -24,6 +23,7 @@ PlayerObject *Player;
 GameObject  *look;
 GameObject  *wallObj;
 GameObject  *floorObj;
+Texture2D   *floorTexture;
 
 //Scale of the level map in the grid size
 float mapScale; 
@@ -41,6 +41,7 @@ Game::Game(unsigned int width, unsigned int height)
 Game::~Game()
 {
     delete WallRenderer;
+    delete FloorRenderer;
 }
 
 void Game::Init()
@@ -48,28 +49,12 @@ void Game::Init()
     // load shaders
     ResourceManager::LoadShader("Shaders/shaderCoordinate.vs", "Shaders/shaderWall.fs", nullptr, "wall");
     ResourceManager::LoadShader("Shaders/shaderCoordinate.vs", "Shaders/shaderFloor.fs", nullptr, "floor");
-
-
-    // Initial Position
-    /*
-    glm::vec2 position = glm::vec2(22.0f, 12.0f); // x, y start position
-    glm::vec2 direction = glm::vec2(-1.0f, 0.0f); // initial direction vector
-    glm::vec2 plane = glm::vec2(0.0f, 0.66f); // the 2d raycaster version of camera plane
-    */
-
-
-    // Create player object
     
-    //configure coordinate system
-    // FOV => 2 * atan(0.5 * aspect ratio)
-    //float fov = 2 * atan(0.5 * static_cast<float>(plane.y) / static_cast<float>(1)); 
-    //printf("fov: %f\n", fov);
+   // Define the View Matrix
+    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->Width), static_cast<float>(this->Height), 0.0f, -1.0f, 1.0f);
     
-   // 
     
-    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->Width), static_cast<float>(this->Height), 0.0f, -1.0f, 1.0f);  
     
-
     /*
     ------------------------------------
     | (-1,-1)         |          (1,-1) |
@@ -90,42 +75,44 @@ void Game::Init()
     -------------------------------------
     
     */
-    
-    // glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->Width), 
-    //    static_cast<float>(this->Height), 0.0f, -1.0f, 1.0f);
-    
-    ResourceManager::GetShader("wall").Use().SetInt("image", 0);
-    ResourceManager::GetShader("wall").SetMat4("projection", projection);
-    ResourceManager::GetShader("floor").Use().SetInt("image", 0);
-    ResourceManager::GetShader("floor").SetMat4("projection", projection);
-    
-    // set render-specific controls
-    Shader Shader = ResourceManager::GetShader("wall");
-    WallRenderer = new SpriteRenderer(Shader);
-
-    Shader = ResourceManager::GetShader("floor");
-    FloorRenderer = new SpriteRenderer(Shader);
-    
-
-    // Load textures
-    ResourceManager::LoadTexture("Textures/bluestone.png", false, "bluestone");
-    ResourceManager::LoadTexture("Textures/colorstone.png", false, "colorstone");
-    ResourceManager::LoadTexture("Textures/eagle.png", false, "eagle");
-    ResourceManager::LoadTexture("Textures/greystone.png", false, "greystone");
-    ResourceManager::LoadTexture("Textures/mossy.png", false, "mossy");
-    ResourceManager::LoadTexture("Textures/purplestone.png", false, "purplestone");
-    ResourceManager::LoadTexture("Textures/redbrick.png", false, "redbrick");
-    ResourceManager::LoadTexture("Textures/wood.png", false, "wood");
-
-  
-    std::cout << ResourceManager::Textures.size() << std::endl;
-
-    // load levels
-    GameLevel one; one.Load("Levels/one.lvl", "Levels/one.ele", this->Width/2, this->Height);
-    this->Levels.push_back(one);
-    this->Level = 0;
-
-    // Set the map Scale
+   
+   
+   // Set the uniform values on each shader    
+   ResourceManager::GetShader("wall").Use().SetInt("image", 0);
+   ResourceManager::GetShader("wall").SetMat4("projection", projection);
+   ResourceManager::GetShader("floor").Use().SetInt("image", 0);
+   ResourceManager::GetShader("floor").SetMat4("projection", projection);
+   
+   // Set render-specific controls
+   Shader Shader = ResourceManager::GetShader("wall");
+   WallRenderer = new SpriteRenderer(Shader);
+   
+   Shader = ResourceManager::GetShader("floor");
+   FloorRenderer = new SpriteRenderer(Shader);
+   
+   
+   // =================== Load textures ========================================
+   ResourceManager::LoadTexture("Textures/bluestone.png", false, "bluestone");
+   ResourceManager::LoadTexture("Textures/colorstone.png", false, "colorstone");
+   ResourceManager::LoadTexture("Textures/eagle.png", false, "eagle");
+   ResourceManager::LoadTexture("Textures/greystone.png", false, "greystone");
+   ResourceManager::LoadTexture("Textures/mossy.png", false, "mossy");
+   ResourceManager::LoadTexture("Textures/purplestone.png", false, "purplestone");
+   ResourceManager::LoadTexture("Textures/redbrick.png", false, "redbrick");
+   ResourceManager::LoadTexture("Textures/wood.png", false, "wood");
+   
+   floorTexture = new Texture2D();
+   
+   // Initialize GameObjects
+   wallObj = new GameObject();
+   floorObj = new GameObject();
+   
+   // load levels
+   GameLevel one; one.Load("Levels/one.lvl", "Levels/one.ele", this->Width/2, this->Height);
+   this->Levels.push_back(one);
+   this->Level = 0;
+   
+   // Set the map Scale
     mapScale = this->Levels[this->Level].tileSize;
     
     // Creates player instance                                                              Plane is perpendicular to the direction/ (0.66f) => FOV is 2 * atan(0.66/1.0)= 66° 
@@ -142,6 +129,8 @@ void Game::Init()
     printf("DirX: %.2f  DirY: %.2f\n", Player->direction.x, Player->direction.y );
     // load textures
     //ResourceManager::LoadTexture("Textures/awesomeface.png", true, "face");
+
+    bool once = true;
 }
 
 void Game::Update(float dt)
@@ -182,7 +171,7 @@ void Game::ProcessInput(float dt)
         look->Position.y = Player->Position.y - Player->Size.y*2;
         
 
-       // printf("X: %.2f , Y: %.2f\n", Player->Position.x, Player->Position.y);
+      // printf("X: %.2f , Y: %.2f\n", Player->Position.x, Player->Position.y);
        // printf("mapX: %d, mapY: %d\n", mapx, mapy);
        
     }
@@ -447,10 +436,15 @@ void Game::Render()
         // drawStart = Y Starting coordinate 
         // Size = (Density of the ray = 1 pixel, drawEnd - drawStart)
 
-        wallObj = new GameObject(glm::vec2(x+ Width/2, drawStart), glm::vec2(rayDensity, drawEnd - drawStart),currentTexture, color);
+        
+        wallObj->Position = glm::vec2(x+ Width/2, drawStart);
+        wallObj->Size = glm::vec2(rayDensity, drawEnd - drawStart);
+        wallObj->Sprite = currentTexture;
+        wallObj->Color = color;
+        
 
         // Draw wall slice
-        wallObj->Draw(*WallRenderer);
+      wallObj->Draw(*WallRenderer);
         
     }
     
@@ -459,9 +453,12 @@ void Game::Render()
 void Game::FloorCasting() {
 
     Texture2D myTexture = ResourceManager::GetTexture("greystone");
-    
+    Texture2D myTexture2 = ResourceManager::GetTexture("wood");
 
-    for(int y = Height/2 + 1; y < Height; y+= rayDensity) { // Mid to bottom of the screen
+    // Buffer that will store the custom texture for the floor
+    std::vector<unsigned char> pixelBuffer(Width * Height * 3); // RGB
+
+    for(int y = Height/2; y < Height; y+= rayDensity) { // Mid to bottom of the screen
 
         // Calculate the directions from the extreme rays
         // Leftmost ray (x = 0) and rightmost ray ( x = w/2)
@@ -479,19 +476,75 @@ void Game::FloorCasting() {
         */
         float rowDistance = posZ/p;
 
+       // std::cout << rowDistance << std::endl;
+
         // calculate the real world step vector we have to add for each x (parallel to camera plane)
         // By multiplying them by the rendering range (screen size), we get the rightmost coordinate from the slice
+        //Apllies the same for y-axis when the player POV is tilted sideways
         glm::vec2 floorStep = glm::vec2(rowDistance * (rayDirRight.x - rayDirLeft.x) / (Width/2), rowDistance * (rayDirRight.y - rayDirLeft.y) / (Width/2));
-        
-        // real world coordinates of the leftmost column. This will be updated as we step to the right.
-        glm::vec2 floor = glm::vec2(Player->Position.x + rowDistance * rayDirLeft.x, Player->Position.y + rowDistance * rayDirLeft.y);
-        
 
-         // Sets the uniform to draw the correct coordinates from the horizontal slice
-         ResourceManager::GetShader("floor").Use().SetVec2("floor", floor);
-         ResourceManager::GetShader("floor").Use().SetVec2("floorStep", floorStep);
+        glm::vec2 mapPosition = glm::vec2(Player->Position.x/mapScale, Player->Position.y/mapScale); 
+        // Real world coordinates of the leftmost column. This will be updated as we step to the right.
+        glm::vec2 floor = glm::vec2(mapPosition.x + rowDistance * rayDirLeft.x, mapPosition.y + rowDistance * rayDirLeft.y);
+        
+        // Builds the buffer that will carry the new texture to render
+        for(int x = 0; x < Width/2; x++) {
+            
+            // Integer parts of the floor current position
+            int cellX = (int)(floor.x); 
+            int cellY = (int)(floor.y);
 
-         floorObj = new GameObject(glm::vec2(Width/2, y), glm::vec2(Width, rayDensity),myTexture, glm::vec3(1.0f, 1.0f, 1.0f));
-         floorObj->Draw(*FloorRenderer);
+            // .f part of the floor current position
+            glm::vec2 fractional = glm::vec2(floor.x - cellX, floor.y - cellY);
+
+            // Gets the exact pixel coodinate in the texture based on the floor position
+            int texX = (int)(myTexture.Width * fractional.x) & (myTexture.Width -1); // Bitmask when texture width is power of two
+            int texY = (int)(myTexture.Height * fractional.y) & (myTexture.Height - 1); // Bitmask when texture heght is power of two
+
+            //std::cout << texX << " " << texY << std::endl;
+            
+            // Convert the pixel cordinate into the pixel position in the buffer array
+            int texIndex = (texY * myTexture.Width + texX) * 3; // 3 bytes per pixel (RGB)
+
+            // Gets the index of the pixel based on the screen coodinate
+            int screenIndexFloor = (y * (Width/2) + x) * 3;
+            
+            int screenIndexCeiling = (( y - Height/2) * (Width/2) + x ) * 3;
+
+            // Write each pixel to the buffer -> Each pixel contains an RGB value
+            pixelBuffer[screenIndexFloor + 0] = myTexture.PixelBuffer[texIndex + 0]; // Red
+            pixelBuffer[screenIndexFloor + 1] = myTexture.PixelBuffer[texIndex + 1]; // Green
+            pixelBuffer[screenIndexFloor + 2] = myTexture.PixelBuffer[texIndex + 2]; // Blue
+
+            
+            pixelBuffer[screenIndexCeiling + 0] = myTexture2.PixelBuffer[texIndex + 0]; // Red
+            pixelBuffer[screenIndexCeiling + 1] = myTexture2.PixelBuffer[texIndex + 1]; // Green    
+            pixelBuffer[screenIndexCeiling + 2] = myTexture2.PixelBuffer[texIndex + 2]; // Blue
+            
+
+
+
+            // Goes to the next corresponding pixel based on the player's POV positions
+            floor.x += floorStep.x;
+            floor.y += floorStep.y;
+        }
+
+
     }
+
+    if(floorTexture->ID == 0) {
+
+        floorTexture->Generate(Width, Height, pixelBuffer.data());
+
+    } else {
+        floorTexture->Update(pixelBuffer.data());
+    }
+    
+
+    floorObj->Position = glm::vec2(Width/2, 0);
+    floorObj->Size = glm::vec2(Width, 2*Height);
+    floorObj->Sprite.Update(pixelBuffer.data());
+    floorObj->Color = glm::vec3(1.0f, 1.0f, 1.0f);
+    
+    floorObj->Draw(*FloorRenderer);
 }

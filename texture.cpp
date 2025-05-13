@@ -29,3 +29,12 @@ void Texture2D::Bind() const
 {
     glBindTexture(GL_TEXTURE_2D, this->ID);
 }
+
+void Texture2D::Update(unsigned char* data) {
+
+    glBindTexture(GL_TEXTURE_2D, this->ID);
+    // GL method that updates texture
+    // glTexImage2D must be called previously
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, this->Width, this->Height, this->Image_Format, GL_UNSIGNED_BYTE, data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}

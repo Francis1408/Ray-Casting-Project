@@ -22,16 +22,20 @@ public:
     unsigned int Wrap_T; // wrapping mode on T axis
     unsigned int Filter_Min; // filtering mode if texture pixels < screen pixels
     unsigned int Filter_Max; // filtering mode if texture pixels > screen pixels
-    // constructor (sets default texture modes)
-    // ONLY USED FOR FLOOR CASTING
+    
+    //====== ONLY USED FOR FLOOR CASTING =======
     std::vector<unsigned char> PixelBuffer; // Buffer to save image content on CPU-SIDE only when is nedded
+    bool IsInitialized = false; // Flag to check if the glTexImage2D was called once so it is possible to Update the buffer
+    // Update the texture inside the class
+    void Update(unsigned char* data);
+    //===============================
+    
+    // constructor (sets default texture modes)
     Texture2D();
     // generates texture from image data
     void Generate(unsigned int width, unsigned int height, unsigned char* data);
     // binds the texture as the current active GL_TEXTURE_2D texture object
     void Bind() const;
-    // Update the texture inside the class
-    void Update(unsigned char* data);
 };
 
 #endif

@@ -42,6 +42,9 @@ Game::~Game()
 {
     delete WallRenderer;
     delete FloorRenderer;
+
+    delete floorTexture;
+    floorTexture = nullptr;
 }
 
 void Game::Init()
@@ -108,7 +111,7 @@ void Game::Init()
    floorObj = new GameObject();
    
    // load levels
-   GameLevel one; one.Load("Levels/one.lvl", "Levels/one.ele", this->Width/2, this->Height);
+   GameLevel one; one.Load("Levels/two.lvl", "Levels/one.ele", this->Width/2, this->Height);
    this->Levels.push_back(one);
    this->Level = 0;
    
@@ -508,21 +511,19 @@ void Game::FloorCasting() {
 
             // Gets the index of the pixel based on the screen coodinate
             int screenIndexFloor = (y * (Width/2) + x) * 3;
-            
-            int screenIndexCeiling = (( y - Height/2) * (Width/2) + x ) * 3;
+            int screenIndexCeiling = ((Height - y) * (Width/2) + x ) * 3;
 
             // Write each pixel to the buffer -> Each pixel contains an RGB value
+            // Buffer part for the floor
             pixelBuffer[screenIndexFloor + 0] = myTexture.PixelBuffer[texIndex + 0]; // Red
             pixelBuffer[screenIndexFloor + 1] = myTexture.PixelBuffer[texIndex + 1]; // Green
             pixelBuffer[screenIndexFloor + 2] = myTexture.PixelBuffer[texIndex + 2]; // Blue
 
-            
+            // Buffer part for the ceiling
             pixelBuffer[screenIndexCeiling + 0] = myTexture2.PixelBuffer[texIndex + 0]; // Red
             pixelBuffer[screenIndexCeiling + 1] = myTexture2.PixelBuffer[texIndex + 1]; // Green    
             pixelBuffer[screenIndexCeiling + 2] = myTexture2.PixelBuffer[texIndex + 2]; // Blue
             
-
-
 
             // Goes to the next corresponding pixel based on the player's POV positions
             floor.x += floorStep.x;
@@ -532,10 +533,12 @@ void Game::FloorCasting() {
 
     }
 
-    if(floorTexture->ID == 0) {
+    // Calls Generate only once in order to avoid memory leaking
+    if(!floorTexture->IsInitialized) {
 
         floorTexture->Generate(Width, Height, pixelBuffer.data());
 
+    // From this point and then, only updates the buffer inside the floorTexture pointer
     } else {
         floorTexture->Update(pixelBuffer.data());
     }
@@ -543,7 +546,7 @@ void Game::FloorCasting() {
 
     floorObj->Position = glm::vec2(Width/2, 0);
     floorObj->Size = glm::vec2(Width, 2*Height);
-    floorObj->Sprite.Update(pixelBuffer.data());
+    floorObj->Sprite = *floorTexture;
     floorObj->Color = glm::vec3(1.0f, 1.0f, 1.0f);
     
     floorObj->Draw(*FloorRenderer);

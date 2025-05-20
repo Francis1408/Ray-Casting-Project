@@ -1,24 +1,26 @@
 
 
 #include "gameLevel.h"
-
 #include <fstream>
 #include <sstream>
 
 
-void GameLevel::Load(const char *mapFile, const char  *elementFile, unsigned int screenWidth, unsigned int screenHeight)
+void GameLevel::Load(const char *mapFile, const char *floorFile, const char *ceilingFile, const char  *elementFile, 
+                     unsigned int screenWidth, unsigned int screenHeight)
 {
     // clear old data
-    this->Tiles.clear();
     this->tileInfo.clear();
+    this->Elements.clear();
+    this->floorInfo.clear();
+    this->ceilingInfo.clear();
 
-    // load from map mapFile
+    // ========================= LOAD MAP FILE =======================
     unsigned int tileCode;
-    GameLevel level;
     std::string line;
     std::ifstream fstream(mapFile);
     this->tileData;
     this->tileInfo;
+
     if (fstream)
     {
         while (std::getline(fstream, line)) // read each line from level mapFile
@@ -35,11 +37,7 @@ void GameLevel::Load(const char *mapFile, const char  *elementFile, unsigned int
         }
     }
 
-
-    // clear old data
-    this->Elements.clear();
-
-    // load from element file
+    // ================= LOAD ELEMENT FILE =================================
     unsigned int elementCode;
     std::string line2;
     std::ifstream fstream2(elementFile);
@@ -57,27 +55,74 @@ void GameLevel::Load(const char *mapFile, const char  *elementFile, unsigned int
 
     }
 
-    if (this->tileData.size() > 0 && elementData.size() > 0)
+    // ================= LOAD FLOOR FILE =================================
+    unsigned int floorCode;
+    std::string line3;
+    std::ifstream fstream3(floorFile);
+    if (fstream3)
+    {
+        while (std::getline(fstream3, line3)) // read each line from level floorFile
+        {
+            std::istringstream sstream(line3);
+            std::vector<unsigned int> row;
+            std::vector<GameObject> floorRow;
+            while (sstream >> floorCode) {
+                row.push_back(floorCode);
+                floorRow.push_back(GameObject()); // Create empty gameObjects
+            } // read each word separated by spaces
+            this->floorData.push_back(row);
+            this->floorInfo.push_back(floorRow);
+        }
+    }
+
+     // ================= LOAD CEILING FILE =================================
+     unsigned int ceilingCode;
+     std::string line4;
+     std::ifstream fstream4(ceilingFile);
+     if (fstream4)
+     {
+         while (std::getline(fstream4, line4)) // read each line from level ceilingFile
+         {
+             std::istringstream sstream(line4);
+             std::vector<unsigned int> row;
+             std::vector<GameObject> ceilingRow;
+             while (sstream >> floorCode) {
+                 row.push_back(floorCode);
+                 ceilingRow.push_back(GameObject()); // Create empty gameObjects
+             } // read each word separated by spaces
+             this->ceilingData.push_back(row);
+             this->ceilingInfo.push_back(ceilingRow);
+         }
+     }
+
+
+
+
+    if (this->tileData.size() > 0 && elementData.size() > 0 && 
+        this->floorData.size() == this->tileData.size() && this->ceilingData.size() == this->floorData.size()) // All the 3 map builder files must be the same size
+    {
+
         this->init(elementData, screenWidth, screenHeight);
+    }
+    else 
+    {
+        throw std::runtime_error("Map data size mismatch: tileData, floorData, and ceilingData must all have the same size");
+    }
+
+     
 
 }
 
-void GameLevel::Draw(SpriteRenderer &renderer)
+void GameLevel::DrawMap(SpriteRenderer &renderer)
 {
-    for (GameObject &tile : this->Tiles)
-        if (!tile.Destroyed)
+    // Draw the map once at the left
+    for (auto &row : this->tileInfo) {
+        for(GameObject& tile : row) {
             tile.Draw(renderer);
+        }
+    }
 }
 
-/*
-bool GameLevel::IsCompleted()
-{
-    for (GameObject &tile : this->Tiles)
-    if (!tile.IsSolid && !tile.Destroyed)
-    return false;
-    return true;
-}
-*/
 
 void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned int screenWidth, unsigned int screenHeight)
 {
@@ -126,7 +171,6 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned in
                 GameObject obj(pos, size, pickedTexture, glm::vec3(1.0f));
                 obj.IsSolid = true;
                 this->tileInfo[i][j] = obj; // Save the tile info
-                this->Tiles.push_back(obj);
             }
             else {
 

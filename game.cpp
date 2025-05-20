@@ -12,7 +12,6 @@
 #include <iostream>
 #include <vector> 
 
-
 SpriteRenderer *WallRenderer;
 SpriteRenderer *FloorRenderer;
 
@@ -42,6 +41,10 @@ Game::~Game()
 {
     delete WallRenderer;
     delete FloorRenderer;
+    delete Player;
+    delete look;
+    delete wallObj;
+    delete floorObj;
 
     delete floorTexture;
     floorTexture = nullptr;
@@ -95,6 +98,9 @@ void Game::Init()
    
    
    // =================== Load textures ========================================
+   
+   ResourceManager::LoadTextures("Textures/");
+   
    ResourceManager::LoadTexture("Textures/bluestone.png", false, "bluestone");
    ResourceManager::LoadTexture("Textures/colorstone.png", false, "colorstone");
    ResourceManager::LoadTexture("Textures/eagle.png", false, "eagle");
@@ -111,7 +117,7 @@ void Game::Init()
    floorObj = new GameObject();
    
    // load levels
-   GameLevel one; one.Load("Levels/two.lvl", "Levels/one.ele", this->Width/2, this->Height);
+   GameLevel one; one.Load("Levels/two.lvl", "Levels/one.flo", "Levels/one.cel", "Levels/one.ele",  this->Width/2, this->Height);
    this->Levels.push_back(one);
    this->Level = 0;
    
@@ -130,10 +136,7 @@ void Game::Init()
     look->Rotation = atan2(Player->direction.y, Player->direction.x) *  (180.0f / M_PI) + 90.0f;
 
     printf("DirX: %.2f  DirY: %.2f\n", Player->direction.x, Player->direction.y );
-    // load textures
-    //ResourceManager::LoadTexture("Textures/awesomeface.png", true, "face");
 
-    bool once = true;
 }
 
 void Game::Update(float dt)
@@ -497,6 +500,8 @@ void Game::FloorCasting() {
             int cellX = (int)(floor.x); 
             int cellY = (int)(floor.y);
 
+
+
             // .f part of the floor current position
             glm::vec2 fractional = glm::vec2(floor.x - cellX, floor.y - cellY);
 
@@ -512,6 +517,10 @@ void Game::FloorCasting() {
             // Gets the index of the pixel based on the screen coodinate
             int screenIndexFloor = (y * (Width/2) + x) * 3;
             int screenIndexCeiling = ((Height - y) * (Width/2) + x ) * 3;
+
+           // this->Levels[this->Level].tileInfo[mapy][mapx].Sprite;
+
+           // myTexture = this->Levels[]
 
             // Write each pixel to the buffer -> Each pixel contains an RGB value
             // Buffer part for the floor
@@ -547,7 +556,7 @@ void Game::FloorCasting() {
     floorObj->Position = glm::vec2(Width/2, 0);
     floorObj->Size = glm::vec2(Width, 2*Height);
     floorObj->Sprite = *floorTexture;
-    floorObj->Color = glm::vec3(1.0f, 1.0f, 1.0f);
+    floorObj->Color = glm::vec3(0.5f, 0.5f, 0.5f);
     
     floorObj->Draw(*FloorRenderer);
 }

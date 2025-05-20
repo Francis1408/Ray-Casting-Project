@@ -6,11 +6,15 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <filesystem>
 
 #include "stb_image.h"
 
+namespace fs = std::filesystem;
+
 // Instantiate static variables
 std::map<std::string, Texture2D>    ResourceManager::Textures;
+std::vector<std::string> texturePaths;
 std::map<std::string, Shader>       ResourceManager::Shaders;
 
 
@@ -30,6 +34,40 @@ Texture2D ResourceManager::LoadTexture(const char *file, bool alpha, std::string
     Textures[name] = loadTextureFromFile(file, alpha);
     return Textures[name];
 }
+
+void ResourceManager::LoadTextures(const std::string& path_str)
+{
+    // Create the directory path
+    fs::path path(path_str);
+
+    // Check if it is the right path
+    if(!fs::exists(path) || !fs::is_directory(path)) {
+
+        std::cerr << "ERROR : Invalid directory path." << std::endl;
+    }
+
+    // Store all file paths in the string array
+    for(const auto& entry : fs::directory_iterator(path)) {
+        if (fs::is_regular_file(entry)) {
+            texturePaths.push_back(entry.path().string());
+        }
+    }
+
+    /*
+    for(int i = 0; i < texturePaths.size(); i++) {
+        
+    std::cout << texturePaths[i] << std::endl;
+    }
+    */
+
+    // Check if there are texture avaiable
+    if(texturePaths.empty()) throw std::runtime_error("No textures avaiable");
+
+
+
+
+}
+
 
 Texture2D ResourceManager::GetTexture(std::string name)
 {

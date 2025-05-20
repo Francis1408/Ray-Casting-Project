@@ -15,14 +15,21 @@
 class GameLevel
 {
 public:
-    // level map state 2D
-    std::vector<GameObject> Tiles;
 
     // level map data
     std::vector<std::vector<unsigned int>> tileData;
-
-    // Matrix that contains the tiles infors
+    // Matrix that contains the tiles gameObject information
     std::vector<std::vector<GameObject>> tileInfo;
+
+    // floor map data
+    std::vector<std::vector<unsigned int>> floorData;
+    // Matrix that contains the floor tiles gameObject information
+    std::vector<std::vector<GameObject>> floorInfo;
+
+    // ceiling map data
+    std::vector<std::vector<unsigned int>> ceilingData;
+    // Matrix that contains the ceiling tiles gameObject information
+    std::vector<std::vector<GameObject>> ceilingInfo;
 
     // elements
     std::vector<GameObject> Elements;
@@ -36,9 +43,10 @@ public:
     // constructor
     GameLevel() { }
     // loads level from file
-    void Load(const char *mapFile, const char *elementFile, unsigned int levelWidth, unsigned int levelHeight);
-    // render level
-    void Draw(SpriteRenderer &renderer);
+    void Load(const char *mapFile, const char* floorFile, const char* ceilingFile, const char *elementFile, unsigned int levelWidth, unsigned int levelHeight);
+
+    // render the level map
+    void DrawMap(SpriteRenderer &renderer);
     /*
     // check if the level is completed (all non-solid tiles are destroyed)
     bool IsCompleted();

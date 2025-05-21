@@ -149,28 +149,36 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned in
         {
             if(this->tileData[i][j] >= 1)
             {
-                glm::vec2 pos(unit_width * j, unit_height * i);
-                glm::vec2 size(unit_width, unit_height);
+                if(this->tileData[i][j] <= ResourceManager::Textures.size()) {
 
-                Texture2D pickedTexture;
+                    glm::vec2 pos(unit_width * j, unit_height * i);
+                    glm::vec2 size(unit_width, unit_height);
+    
+                    Texture2D pickedTexture;
+                    
+                    // Define the wall object
+                    pickedTexture = ResourceManager::GetTexture(this->tileData[i][j]);
+                    GameObject wallObj(pos, size, pickedTexture, glm::vec3(1.0f));
+                    wallObj.IsSolid = true;
+                    this->tileInfo[i][j] = wallObj; // Save the tile info
 
-                switch(this->tileData[i][j]) {
-                    case 1: pickedTexture = ResourceManager::GetTexture("bluestone");  break;
-                    case 2: pickedTexture = ResourceManager::GetTexture("colorstone"); break;
-                    case 3: pickedTexture = ResourceManager::GetTexture("eagle");      break;
-                    case 4: pickedTexture = ResourceManager::GetTexture("greystone");  break;
-                    case 5: pickedTexture = ResourceManager::GetTexture("mossy");      break;
-                    case 6: pickedTexture = ResourceManager::GetTexture("purplestone");break;
-                    case 7: pickedTexture = ResourceManager::GetTexture("redbrick");   break;
-                    case 8: pickedTexture = ResourceManager::GetTexture("wood");       break;
-                    default:pickedTexture = ResourceManager::GetTexture("bluestone");  break;
+
+                    // Define the floor object
+                    pickedTexture = ResourceManager::GetTexture(this->floorData[i][j]);
+                    GameObject floorObj(pos, size, pickedTexture, glm::vec3(1.0f));
+                    floorObj.IsSolid = true;
+                    this->floorInfo[i][j] = floorObj; // Save the floor info
+
+                    // Define the ceiling object
+                    pickedTexture = ResourceManager::GetTexture(this->ceilingData[i][j]);
+                    GameObject ceilObj(pos, size, pickedTexture, glm::vec3(1.0f));
+                    ceilObj.IsSolid = true;
+                    this->ceilingInfo[i][j] = ceilObj; // Save the ceiling info
                 }
-
-
-
-                GameObject obj(pos, size, pickedTexture, glm::vec3(1.0f));
-                obj.IsSolid = true;
-                this->tileInfo[i][j] = obj; // Save the tile info
+                else {
+                    throw std::runtime_error("Index in a map file does not match the amount of textures avaible");
+                    // Terminate the execution somehow
+                }
             }
             else {
 

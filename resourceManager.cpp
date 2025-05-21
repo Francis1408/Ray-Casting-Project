@@ -7,15 +7,17 @@
 #include <sstream>
 #include <fstream>
 #include <filesystem>
+#include <algorithm>
+#include <string>
 
 #include "stb_image.h"
 
 namespace fs = std::filesystem;
 
 // Instantiate static variables
-std::map<std::string, Texture2D>    ResourceManager::Textures;
+std::map<int, Texture2D>      ResourceManager::Textures;
 std::vector<std::string> texturePaths;
-std::map<std::string, Shader>       ResourceManager::Shaders;
+std::map<std::string, Shader> ResourceManager::Shaders;
 
 
 Shader ResourceManager::LoadShader(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile, std::string name)
@@ -29,16 +31,14 @@ Shader ResourceManager::GetShader(std::string name)
     return Shaders[name];
 }
 
-Texture2D ResourceManager::LoadTexture(const char *file, bool alpha, std::string name)
-{
-    Textures[name] = loadTextureFromFile(file, alpha);
-    return Textures[name];
-}
 
 void ResourceManager::LoadTextures(const std::string& path_str)
 {
     // Create the directory path
     fs::path path(path_str);
+
+    // Create a temporary vector to store the entries
+    std::vector<fs::directory_entry> entries;
 
     // Check if it is the right path
     if(!fs::exists(path) || !fs::is_directory(path)) {
@@ -49,29 +49,44 @@ void ResourceManager::LoadTextures(const std::string& path_str)
     // Store all file paths in the string array
     for(const auto& entry : fs::directory_iterator(path)) {
         if (fs::is_regular_file(entry)) {
-            texturePaths.push_back(entry.path().string());
+            entries.push_back(entry);
         }
     }
 
-    /*
-    for(int i = 0; i < texturePaths.size(); i++) {
-        
-    std::cout << texturePaths[i] << std::endl;
-    }
-    */
+    // Sort the entries by numeric filename, since the fs picks the files randomly
+                                              // Lambda funtion - inline function that saves sorted list into []  
+    std::sort(entries.begin(), entries.end(), [](const fs::directory_entry& a, const fs::directory_entry&b) {
+
+        // gets the path -> remove the extensions name -> transform into string
+        int aIndex = std::stoi(a.path().stem().string()); // transform to a int the file name 
+        int bIndex = std::stoi(b.path().stem().string());
+        return aIndex < bIndex;
+    });
+   
+    
 
     // Check if there are texture avaiable
-    if(texturePaths.empty()) throw std::runtime_error("No textures avaiable");
+    if(entries.empty()) throw std::runtime_error("No textures avaiable");
 
 
+    // Load the textures into the Textures map
+    // The textures will have an index of [1: num_of_textures]
+    for(const auto& entry : entries) {
+        std::string fullPath = entry.path().string();
+        int id = std::stoi(entry.path().stem().string()); // get the int from file name
+    
+        std::cout << "Loading texture id " << id << ": " << fullPath << std::endl;
+        Textures[id] = loadTextureFromFile(fullPath.c_str(), false);
+    
+    }
 
 
 }
 
 
-Texture2D ResourceManager::GetTexture(std::string name)
+Texture2D ResourceManager::GetTexture(int index)
 {
-    return Textures[name];
+    return Textures[index];
 }
 
 void ResourceManager::Clear()

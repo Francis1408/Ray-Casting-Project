@@ -449,7 +449,7 @@ void Game::Render()
 
 void Game::FloorCasting() {
 
-    Texture2D myTexture = ResourceManager::GetTexture(4);
+    Texture2D myTexture =ResourceManager::GetTexture(7);
     Texture2D myTexture2 = ResourceManager::GetTexture(7);
 
     // Buffer that will store the custom texture for the floor
@@ -481,16 +481,16 @@ void Game::FloorCasting() {
         glm::vec2 floorStep = glm::vec2(rowDistance * (rayDirRight.x - rayDirLeft.x) / (Width/2), rowDistance * (rayDirRight.y - rayDirLeft.y) / (Width/2));
 
         glm::vec2 mapPosition = glm::vec2(Player->Position.x/mapScale, Player->Position.y/mapScale); 
-        // Real world coordinates of the leftmost column. This will be updated as we step to the right.
+
+        // Real world coordinates in the grid of the leftmost column. This will be updated as we step to the right.
         glm::vec2 floor = glm::vec2(mapPosition.x + rowDistance * rayDirLeft.x, mapPosition.y + rowDistance * rayDirLeft.y);
         
         // Builds the buffer that will carry the new texture to render
         for(int x = 0; x < Width/2; x++) {
             
-            // Integer parts of the floor current position
+            // Integer parts of the floor current position in the grid map
             int cellX = (int)(floor.x); 
             int cellY = (int)(floor.y);
-
 
 
             // .f part of the floor current position
@@ -500,7 +500,7 @@ void Game::FloorCasting() {
             int texX = (int)(myTexture.Width * fractional.x) & (myTexture.Width -1); // Bitmask when texture width is power of two
             int texY = (int)(myTexture.Height * fractional.y) & (myTexture.Height - 1); // Bitmask when texture heght is power of two
 
-            //std::cout << texX << " " << texY << std::endl;
+           // std::cout << cellX << " " << cellY << std::endl;
             
             // Convert the pixel cordinate into the pixel position in the buffer array
             int texIndex = (texY * myTexture.Width + texX) * 3; // 3 bytes per pixel (RGB)
@@ -509,9 +509,8 @@ void Game::FloorCasting() {
             int screenIndexFloor = (y * (Width/2) + x) * 3;
             int screenIndexCeiling = ((Height - y) * (Width/2) + x ) * 3;
 
-           // this->Levels[this->Level].tileInfo[mapy][mapx].Sprite;
-
-           // myTexture = this->Levels[]
+            
+            myTexture = this->Levels[this->Level].floorInfo[1][1].Sprite;
 
             // Write each pixel to the buffer -> Each pixel contains an RGB value
             // Buffer part for the floor

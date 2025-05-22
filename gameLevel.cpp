@@ -147,47 +147,52 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned in
     {
         for(int j = 0; j < mapWidth; j++)
         {
-            if(this->tileData[i][j] >= 1)
-            {
-                if(this->tileData[i][j] <= ResourceManager::Textures.size()) {
 
-                    glm::vec2 pos(unit_width * j, unit_height * i);
-                    glm::vec2 size(unit_width, unit_height);
-    
-                    Texture2D pickedTexture;
-                    
-                    // Define the wall object
-                    pickedTexture = ResourceManager::GetTexture(this->tileData[i][j]);
-                    GameObject wallObj(pos, size, pickedTexture, glm::vec3(1.0f));
-                    wallObj.IsSolid = true;
-                    this->tileInfo[i][j] = wallObj; // Save the tile info
+            //if(this->tileData[i][j] <= ResourceManager::Textures.size() || this->floorData[i][j] <= ResourceManager::Textures.size()
+            //   || this->ceilingData[i][j] <= ResourceManager::Textures.size()) {
 
-
-                    // Define the floor object
-                    pickedTexture = ResourceManager::GetTexture(this->floorData[i][j]);
-                    GameObject floorObj(pos, size, pickedTexture, glm::vec3(1.0f));
-                    floorObj.IsSolid = true;
-                    this->floorInfo[i][j] = floorObj; // Save the floor info
-
-                    // Define the ceiling object
-                    pickedTexture = ResourceManager::GetTexture(this->ceilingData[i][j]);
-                    GameObject ceilObj(pos, size, pickedTexture, glm::vec3(1.0f));
-                    ceilObj.IsSolid = true;
-                    this->ceilingInfo[i][j] = ceilObj; // Save the ceiling info
+                   
+                Texture2D pickedTexture;
+                // Define the floor texture
+                std::cout << this->floorData[i][j] <<std::endl;
+                pickedTexture = ResourceManager::GetTexture(this->floorData[i][j]);
+                this->floorInfo[i][j].Sprite = pickedTexture;
+                std::cout << this->floorInfo[i][j].Sprite.ID << std::endl;
+                this->floorInfo[i][j].IsSolid = true; // Save the floor info
+                   
+                   
+                // Define the ceiling texure
+                pickedTexture = ResourceManager::GetTexture(this->ceilingData[i][j]);
+                this->ceilingInfo[i][j].Sprite = pickedTexture;
+                this->ceilingInfo[i][j].IsSolid = true; // Save the ceiling info
+                   
+                if(this->tileData[i][j] >= 1)
+                {
+                  
+                    if(this->tileData[i][j] <= ResourceManager::Textures.size()) {
+                           
+                        glm::vec2 pos(unit_width * j, unit_height * i);
+                        glm::vec2 size(unit_width, unit_height);
+                           
+                           
+                        // Define the wall object
+                        pickedTexture = ResourceManager::GetTexture(this->tileData[i][j]);
+                        GameObject wallObj(pos, size, pickedTexture, glm::vec3(1.0f));
+                        wallObj.IsSolid = true;
+                        this->tileInfo[i][j] = wallObj; // Save the tile info
+                           
+                    }
                 }
                 else {
-                    throw std::runtime_error("Index in a map file does not match the amount of textures avaible");
-                    // Terminate the execution somehow
+                    this->tileInfo[i][j].IsSolid = false; // Set the tile as not solid
                 }
-            }
-            else {
-
-                this->tileInfo[i][j].IsSolid = false; // Set the tile as not solid
-            }
-
-           // printf("%d ", this->tileData[i][j]); // Print map on the terminal
+           // }
+          //  else {
+            //    throw std::runtime_error("Index in a map file does not match the amount of textures avaiable");
+                // Terminate the execution somehow
+           // }
         }
-           // printf("\n");
+           
     }
 
     // The player is 8x smaller than the walls

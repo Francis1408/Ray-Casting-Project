@@ -25,10 +25,15 @@ GameObject  *floorObj;
 Texture2D   *floorTexture;
 
 //Scale of the level map in the grid size
-float mapScale; 
+float mapScale;
+
+// Map size in grid units
+unsigned int mapSizeGridX;
+unsigned int mapSizeGridY;
+
 
 // RayDensity = How thick is each wall slice
-int rayDensity = 2;
+unsigned int rayDensity = 2;
 
 
 Game::Game(unsigned int width, unsigned int height) 
@@ -108,12 +113,15 @@ void Game::Init()
    floorObj = new GameObject();
    
    // load levels
-   GameLevel one; one.Load("Levels/two.lvl", "Levels/one.flo", "Levels/one.cel", "Levels/one.ele",  this->Width/2, this->Height);
+   GameLevel one; one.Load("Levels/one.lvl", "Levels/one.flo", "Levels/one.cel", "Levels/one.ele",  this->Width/2, this->Height);
    this->Levels.push_back(one);
    this->Level = 0;
    
    // Set the map Scale
     mapScale = this->Levels[this->Level].tileSize;
+    mapSizeGridX = this->Levels[this->Level].tileData[0].size();
+    mapSizeGridY = this->Levels[this->Level].tileData.size();
+
     
     // Creates player instance                                                              Plane is perpendicular to the direction/ (0.66f) => FOV is 2 * atan(0.66/1.0)= 66° 
     Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, ResourceManager::GetTexture(7), glm::vec3(1.0f, 1.0f, 0.0f), mapScale, 5.0f, glm::vec2(-1.0f, 0.0f), glm::vec2(0.0f, 0.66f));
@@ -449,8 +457,8 @@ void Game::Render()
 
 void Game::FloorCasting() {
 
-    Texture2D myTexture =ResourceManager::GetTexture(7);
-    Texture2D myTexture2 = ResourceManager::GetTexture(7);
+   // Texture2D floorBuffer = ResourceManager::GetTexture(7);
+   // Texture2D ceilingBuffer = ResourceManager::GetTexture(7);
 
     // Buffer that will store the custom texture for the floor
     std::vector<unsigned char> pixelBuffer(Width * Height * 3); // RGB
@@ -492,44 +500,51 @@ void Game::FloorCasting() {
             int cellX = (int)(floor.x); 
             int cellY = (int)(floor.y);
 
+            // Make a ground check because the ray can scan coordinates out of bounds
+            if(cellX >= 0 && cellX < mapSizeGridX &&
+            cellY >= 0 && cellY < mapSizeGridY) {
+ 
 
-            // .f part of the floor current position
-            glm::vec2 fractional = glm::vec2(floor.x - cellX, floor.y - cellY);
+                Texture2D& floorTex = Levels[Level].floorInfo[cellY][cellX].Sprite;
+                Texture2D& ceilTex  = Levels[Level].ceilingInfo[cellY][cellX].Sprite;
+                
+                
+                // .f part of the floor current position
+                glm::vec2 fractional = glm::vec2(floor.x - cellX, floor.y - cellY);
+                
+                // Gets the exact pixel coodinate in the texture based on the floor position
+                int texX = (int)(floorTex.Width * fractional.x) & (floorTex.Width -1); // Bitmask when texture width is power of two
+                int texY = (int)(floorTex.Height * fractional.y) & (floorTex.Height- 1); // Bitmask when texture heght is power of two
+                
+                // std::cout << cellX << " " << cellY << std::endl;
+                
+                // Convert the pixel cordinate into the pixel position in the buffer array
+                int texIndex = (texY * floorTex.Width + texX) * 3; // 3 bytes per pixel (RGB)
+                
+                // Gets the index of the pixel based on the screen coodinate
+                int screenIndexFloor = (y * (Width/2) + x) * 3;
+                int screenIndexCeiling = ((Height - y) * (Width/2) + x ) * 3;
 
-            // Gets the exact pixel coodinate in the texture based on the floor position
-            int texX = (int)(myTexture.Width * fractional.x) & (myTexture.Width -1); // Bitmask when texture width is power of two
-            int texY = (int)(myTexture.Height * fractional.y) & (myTexture.Height - 1); // Bitmask when texture heght is power of two
 
-           // std::cout << cellX << " " << cellY << std::endl;
-            
-            // Convert the pixel cordinate into the pixel position in the buffer array
-            int texIndex = (texY * myTexture.Width + texX) * 3; // 3 bytes per pixel (RGB)
-
-            // Gets the index of the pixel based on the screen coodinate
-            int screenIndexFloor = (y * (Width/2) + x) * 3;
-            int screenIndexCeiling = ((Height - y) * (Width/2) + x ) * 3;
-
-            
-            myTexture = this->Levels[this->Level].floorInfo[1][1].Sprite;
-
-            // Write each pixel to the buffer -> Each pixel contains an RGB value
-            // Buffer part for the floor
-            pixelBuffer[screenIndexFloor + 0] = myTexture.PixelBuffer[texIndex + 0]; // Red
-            pixelBuffer[screenIndexFloor + 1] = myTexture.PixelBuffer[texIndex + 1]; // Green
-            pixelBuffer[screenIndexFloor + 2] = myTexture.PixelBuffer[texIndex + 2]; // Blue
-
-            // Buffer part for the ceiling
-            pixelBuffer[screenIndexCeiling + 0] = myTexture2.PixelBuffer[texIndex + 0]; // Red
-            pixelBuffer[screenIndexCeiling + 1] = myTexture2.PixelBuffer[texIndex + 1]; // Green    
-            pixelBuffer[screenIndexCeiling + 2] = myTexture2.PixelBuffer[texIndex + 2]; // Blue
-            
-
+                // Write each pixel to the buffer -> Each pixel contains an RGB value
+                // Buffer part for the floor
+                pixelBuffer[screenIndexFloor + 0] = floorTex.PixelBuffer[texIndex + 0]; // Red
+                pixelBuffer[screenIndexFloor + 1] = floorTex.PixelBuffer[texIndex + 1]; // Green
+                pixelBuffer[screenIndexFloor + 2] = floorTex.PixelBuffer[texIndex + 2]; // Blue
+                
+                // Buffer part for the ceiling
+                pixelBuffer[screenIndexCeiling + 0] = ceilTex.PixelBuffer[texIndex + 0]; // Red
+                pixelBuffer[screenIndexCeiling + 1] = ceilTex.PixelBuffer[texIndex + 1]; // Green    
+                pixelBuffer[screenIndexCeiling + 2] = ceilTex.PixelBuffer[texIndex + 2]; // Blue
+                
+                
+            }
             // Goes to the next corresponding pixel based on the player's POV positions
             floor.x += floorStep.x;
             floor.y += floorStep.y;
+        
         }
-
-
+        
     }
 
     // Calls Generate only once in order to avoid memory leaking

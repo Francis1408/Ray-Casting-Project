@@ -11,10 +11,15 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
+// Calculate FPS function
+void showFPS(GLFWwindow* window, float& fpsLastTime, unsigned int& fpsFrameCount);
+
 // The Width of the screen
 const unsigned int SCREEN_WIDTH = 1024;
 // The height of the screen
 const unsigned int SCREEN_HEIGHT = 512;
+// Time to update the FPS value
+const float ELAPSED_TIME = 0.5f;
 
 Game Breakout(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -56,6 +61,11 @@ int main(int argc, char *argv[])
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
 
+    // Fps variables
+    // -------------------
+    float fpsLastTime = 0.0f;
+    unsigned int fpsFrameCount = 0;
+
     while (!glfwWindowShouldClose(window))
     {
         // calculate delta time
@@ -63,6 +73,10 @@ int main(int argc, char *argv[])
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+
+        // FPS Counter
+        showFPS(window, fpsLastTime, fpsFrameCount);
+
         glfwPollEvents();
 
         // manage user input
@@ -109,5 +123,25 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+}
+
+void showFPS(GLFWwindow* window, float& fpsLastTime, unsigned int& fpsFrameCount) {
+    
+    float currentTime = glfwGetTime();
+    float elapsedTime = currentTime - fpsLastTime;
+    fpsFrameCount++;
+
+
+    if(elapsedTime >= ELAPSED_TIME) {
+        
+        float FPS = fpsFrameCount/ elapsedTime;
+
+        std::string newTitle = "FPS: " + std::to_string(static_cast<int>(FPS));
+        glfwSetWindowTitle(window, newTitle.c_str());
+        
+        fpsFrameCount = 0;
+        fpsLastTime = currentTime;
+    }
+
 }
 

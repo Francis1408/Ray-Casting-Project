@@ -154,10 +154,10 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned in
                    
                 Texture2D pickedTexture;
                 // Define the floor texture
-                std::cout << this->floorData[i][j] <<std::endl;
+                //std::cout << this->floorData[i][j] <<std::endl;
                 pickedTexture = ResourceManager::GetTexture(this->floorData[i][j]);
                 this->floorInfo[i][j].Sprite = pickedTexture;
-                std::cout << this->floorInfo[i][j].Sprite.ID << std::endl;
+                //std::cout << this->floorInfo[i][j].Sprite.ID << std::endl;
                 this->floorInfo[i][j].IsSolid = true; // Save the floor info
                    
                    

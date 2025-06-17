@@ -60,7 +60,9 @@ void Game::Init()
     // load shaders
     ResourceManager::LoadShader("Shaders/shaderCoordinate.vs", "Shaders/shaderWall.fs", nullptr, "wall");
     ResourceManager::LoadShader("Shaders/shaderCoordinate.vs", "Shaders/shaderFloor.fs", nullptr, "floor");
-    
+    ResourceManager::LoadShader("Shaders/shaderText.vs", "Shaders/shaderText.fs", nullptr, "text");
+
+
    // Define the View Matrix
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->Width), static_cast<float>(this->Height), 0.0f, -1.0f, 1.0f);
     
@@ -93,6 +95,8 @@ void Game::Init()
    ResourceManager::GetShader("wall").SetMat4("projection", projection);
    ResourceManager::GetShader("floor").Use().SetInt("image", 0);
    ResourceManager::GetShader("floor").SetMat4("projection", projection);
+   ResourceManager::GetShader("text").Use().SetMat4("text", 0);
+   ResourceManager::GetShader("text").SetMat4("projection", projection);
    
    // Set render-specific controls
    Shader Shader = ResourceManager::GetShader("wall");

@@ -16,7 +16,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 // Calculate FPS function
-void showFPS(GLFWwindow* window, float& fpsLastTime, unsigned int& fpsFrameCount);
+void showFPS(Shader &shader, float& fpsLastTime, unsigned int& fpsFrameCount);
 void RenderText(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color);
 
 // The Width of the screen
@@ -25,6 +25,8 @@ const unsigned int SCREEN_WIDTH = 1024;
 const unsigned int SCREEN_HEIGHT = 512;
 // Time to update the FPS value
 const float ELAPSED_TIME = 0.5f;
+
+
 
 
 
@@ -70,7 +72,6 @@ int main(int argc, char *argv[])
     // OpenGL configuration
     // --------------------
     glEnable(GL_CULL_FACE);
-    glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -181,28 +182,29 @@ int main(int argc, char *argv[])
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // FPS Counter
-        showFPS(window, fpsLastTime, fpsFrameCount);
-
+        
         glfwPollEvents();
-
+        
         // manage user input
         // -----------------
         Breakout.ProcessInput(deltaTime);
-
+        
         // update game state
         // -----------------
-       // Breakout.Update(deltaTime);
-
+        // Breakout.Update(deltaTime);
+        
         // render
         // ------
         glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        //Breakout.Render();
-
-        RenderText(TextShader, "This is sample text", 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
+        Breakout.Render();
+        
+        //RenderText(TextShader, "This is sample text", 0.0f, 480.0f, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
         RenderText(TextShader, "(C) LearnOpenGL.com", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
 
+        // FPS Counter
+        showFPS(TextShader, fpsLastTime, fpsFrameCount);
+        
         glfwSwapBuffers(window);
     }
 
@@ -237,23 +239,25 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 
 // Function to calculate the FPS 
-void showFPS(GLFWwindow* window, float& fpsLastTime, unsigned int& fpsFrameCount) {
+void showFPS(Shader &shader, float& fpsLastTime, unsigned int& fpsFrameCount) {
     
+    static float FPS = 0.0f; // Persistent value between calls
+
     float currentTime = glfwGetTime();
     float elapsedTime = currentTime - fpsLastTime;
     fpsFrameCount++;
 
-
+    // Update the FPS on every elapsed time
     if(elapsedTime >= ELAPSED_TIME) {
         
-        float FPS = fpsFrameCount/ elapsedTime;
-
-        std::string newTitle = "FPS: " + std::to_string(static_cast<int>(FPS));
-        glfwSetWindowTitle(window, newTitle.c_str());
-        
+        FPS = fpsFrameCount/ elapsedTime;   
         fpsFrameCount = 0;
         fpsLastTime = currentTime;
     }
+    // Show the FPS time on screen
+    RenderText(shader, "FPS: " + std::to_string(static_cast<int>(FPS)),
+        0.0f, 480.0f, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
+
 
 }
 

@@ -63,10 +63,10 @@ void Game::Init()
     ResourceManager::LoadShader("Shaders/shaderText.vs", "Shaders/shaderText.fs", nullptr, "text");
 
 
-   // Define the View Matrix
+   // Define the View Matrix - Game is oriented from top to bottom
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->Width), static_cast<float>(this->Height), 0.0f, -1.0f, 1.0f);
-    
-    
+   // The text Coordinate is defined from bottom to top
+    glm::mat4 textProjection = glm::ortho(0.0f, static_cast<float>(this->Width), 0.0f, static_cast<float>(this->Height));
     
     /*
     ------------------------------------
@@ -96,7 +96,7 @@ void Game::Init()
    ResourceManager::GetShader("floor").Use().SetInt("image", 0);
    ResourceManager::GetShader("floor").SetMat4("projection", projection);
    ResourceManager::GetShader("text").Use().SetMat4("text", 0);
-   ResourceManager::GetShader("text").SetMat4("projection", projection);
+   ResourceManager::GetShader("text").SetMat4("projection", textProjection);
    
    // Set render-specific controls
    Shader Shader = ResourceManager::GetShader("wall");

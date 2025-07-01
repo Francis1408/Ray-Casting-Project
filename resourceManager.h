@@ -8,6 +8,7 @@
 
 #include "texture.h"
 #include "shader.h"
+#include "character.h"
 
 
 // A static singleton ResourceManager class that hosts several
@@ -21,6 +22,8 @@ public:
     // resource storage
     static std::map<std::string, Shader>    Shaders;
     static std::map<int, Texture2D> Textures;
+    static std::map<GLchar, Character> Characters;
+
     // loads (and generates) a shader program from file loading vertex, fragment (and geometry) shader's source code. If gShaderFile is not nullptr, it also loads a geometry shader
     static Shader    LoadShader(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile, std::string name);
     // retrieves a stored sader
@@ -29,8 +32,14 @@ public:
     static void LoadTextures(const std::string& path_str);
     // retrieves a stored texture
     static Texture2D GetTexture(int index);
+    // loads an instance of character
+    static void LoadCharacter(unsigned char c, Character character);
+    // retrieves an instance of character
+    static Character GetCharacter(unsigned char c);
+    
     // properly de-allocates all loaded resources
     static void      Clear();
+
 private:
     // private constructor, that is we do not want any actual resource manager objects. Its members and functions should be publicly available (static).
     ResourceManager() { }

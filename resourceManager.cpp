@@ -18,6 +18,7 @@ namespace fs = std::filesystem;
 std::map<int, Texture2D>      ResourceManager::Textures;
 std::vector<std::string> texturePaths;
 std::map<std::string, Shader> ResourceManager::Shaders;
+std::map<GLchar, Character> ResourceManager::Characters;
 
 
 Shader ResourceManager::LoadShader(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile, std::string name)
@@ -87,6 +88,24 @@ void ResourceManager::LoadTextures(const std::string& path_str)
 Texture2D ResourceManager::GetTexture(int index)
 {
     return Textures[index];
+}
+
+void ResourceManager::LoadCharacter(unsigned char c, Character character ) 
+{
+    Characters.insert(std::pair<char, Character>(c, character));
+}
+
+Character ResourceManager::GetCharacter(unsigned char c) 
+{
+
+    // Based on the type of char passed, finds the matching character
+    auto it = Characters.find(c);
+    if (it == Characters.end()) {
+        std::cerr << "ERROR::ResourceManager: Character '" << c << "' not found!" << std::endl;
+        throw std::runtime_error("Character not found in ResourceManager");
+    }
+    // return the character
+    return it->second;
 }
 
 void ResourceManager::Clear()

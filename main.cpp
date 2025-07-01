@@ -4,6 +4,7 @@
 
 #include "game.h"
 #include "resourceManager.h"
+#include "character.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -32,17 +33,8 @@ const float ELAPSED_TIME = 0.5f;
 
 Game Breakout(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-/// Holds all state information relevant to a character as loaded using FreeType
-struct Character {
-    unsigned int TextureID; // ID handle of the glyph texture
-    glm::ivec2   Size;      // Size of glyph
-    glm::ivec2   Bearing;   // Offset from baseline to left/top of glyph
-    unsigned int Advance;   // Horizontal offset to advance to next glyph
-};
-
 std::map<GLchar, Character> Characters;
 unsigned int VAO, VBO;
-
 
 namespace fs = std::filesystem;
 
@@ -121,38 +113,20 @@ int main(int argc, char *argv[])
                 continue;
             }
             // generate texture
-            unsigned int texture;
-            glGenTextures(1, &texture);
-            glBindTexture(GL_TEXTURE_2D, texture);
-            glTexImage2D(
-                GL_TEXTURE_2D,
-                0,
-                GL_RED,
-                face->glyph->bitmap.width,
-                face->glyph->bitmap.rows,
-                0,
-                GL_RED,
-                GL_UNSIGNED_BYTE,
-                face->glyph->bitmap.buffer
-            );
-            // set texture options
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            // now store character for later use
-            Character character = {
-                texture,
-                glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-                glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-                static_cast<unsigned int>(face->glyph->advance.x)
-            };
-            Characters.insert(std::pair<char, Character>(c, character));
+            Texture2D tex(GL_RED, GL_RED, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR); 
+            tex.Generate(face->glyph->bitmap.width,face->glyph->bitmap.rows, face->glyph->bitmap.buffer);
+            Character character(tex.ID, glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+                                glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top), static_cast<unsigned int>(face->glyph->advance.x));
+            
+            
+            ResourceManager::LoadCharacter(c, character);
         }
     }
     // destroy FreeType once we're finished
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
+
+    // =========== CREATE A TEXT RENDERER ================
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -163,6 +137,8 @@ int main(int argc, char *argv[])
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    // =====================================================
 
     // deltaTime variables
     // -------------------
@@ -273,7 +249,7 @@ void RenderText(Shader &shader, std::string text, float x, float y, float scale,
     std::string::const_iterator c;
     for (c = text.begin(); c != text.end(); c++) 
     {
-        Character ch = Characters[*c];
+        Character ch = ResourceManager::GetCharacter(static_cast<unsigned char>(*c));
 
         float xpos = x + ch.Bearing.x * scale;
         float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;

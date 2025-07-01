@@ -117,7 +117,7 @@ void Game::Init()
    floorObj = new GameObject();
    
    // load levels
-   GameLevel one; one.Load("Levels/one.lvl", "Levels/one.flo", "Levels/one.cel", "Levels/one.ele",  this->Width/2, this->Height);
+   GameLevel one; one.Load("Levels/two.lvl", "Levels/two.flo", "Levels/two.cel", "Levels/one.ele",  this->Width/2, this->Height);
    this->Levels.push_back(one);
    this->Level = 0;
    

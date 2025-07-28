@@ -1,8 +1,11 @@
 
-
 #include "gameLevel.h"
 #include <fstream>
 #include <sstream>
+
+// The size proportion from the elements compared to the walls
+const int PLAYER_SIZE_OFFSET = 8; // The player is 8x smaller than the walls
+const int ELEMENTS_SIZE_OFFSET = 8; // The elements are 8x smaller than the walls
 
 
 void GameLevel::Load(const char *mapFile, const char *floorFile, const char *ceilingFile, const char  *elementFile, 
@@ -10,7 +13,7 @@ void GameLevel::Load(const char *mapFile, const char *floorFile, const char *cei
 {
     // clear old data
     this->tileInfo.clear();
-    this->Elements.clear();
+    this->elementsInfo.clear();
     this->floorInfo.clear();
     this->ceilingInfo.clear();
 
@@ -38,10 +41,11 @@ void GameLevel::Load(const char *mapFile, const char *floorFile, const char *cei
     }
 
     // ================= LOAD ELEMENT FILE =================================
+    // IN THE ELEMENT FILE, THE FIRST LINE IS ALWAYS THE PLAYER
+    // THE FOLLOWING LINES ARE THE SPRITES DISTRIBUTED AROUND THE MAP
     unsigned int elementCode;
     std::string line2;
     std::ifstream fstream2(elementFile);
-    std::vector<std::vector<unsigned int>> elementData;
     if (fstream2)
     {
         while (std::getline(fstream2, line2)) // read each line from level elementFile
@@ -50,8 +54,12 @@ void GameLevel::Load(const char *mapFile, const char *floorFile, const char *cei
             std::vector<unsigned int> row;
             while (sstream >> elementCode) // read each word separated by spaces
                 row.push_back(elementCode);
-            elementData.push_back(row);
+            this->elementData.push_back(row); // Gets the position and sprite type information from each element
+            this->elementsInfo.push_back(GameObject()); // Create an empty gameObject for each element
         }
+
+        // Remove one GameObject since the first line (player) does not count as an sprite element
+        this->elementsInfo.pop_back();
 
     }
 
@@ -98,11 +106,11 @@ void GameLevel::Load(const char *mapFile, const char *floorFile, const char *cei
 
 
 
-    if (this->tileData.size() > 0 && elementData.size() > 0 && 
+    if (this->tileData.size() > 0 && this->elementData.size() > 0 && 
         this->floorData.size() == this->tileData.size() && this->ceilingData.size() == this->floorData.size()) // All the 3 map builder files must be the same size
     {
 
-        this->init(elementData, screenWidth, screenHeight);
+        this->init(screenWidth, screenHeight);
     }
     else 
     {
@@ -124,7 +132,7 @@ void GameLevel::DrawMap(SpriteRenderer &renderer)
 }
 
 
-void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned int screenWidth, unsigned int screenHeight)
+void GameLevel::init(unsigned int screenWidth, unsigned int screenHeight)
 {
 
    
@@ -148,16 +156,11 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned in
         for(int j = 0; j < mapWidth; j++)
         {
 
-            //if(this->tileData[i][j] <= ResourceManager::Textures.size() || this->floorData[i][j] <= ResourceManager::Textures.size()
-            //   || this->ceilingData[i][j] <= ResourceManager::Textures.size()) {
-
-                   
+            // Assign the floor/ceiling tiles with the matching texture
                 Texture2D pickedTexture;
                 // Define the floor texture
-                //std::cout << this->floorData[i][j] <<std::endl;
                 pickedTexture = ResourceManager::GetTexture(this->floorData[i][j]);
                 this->floorInfo[i][j].Sprite = pickedTexture;
-                //std::cout << this->floorInfo[i][j].Sprite.ID << std::endl;
                 this->floorInfo[i][j].IsSolid = true; // Save the floor info
                    
                    
@@ -186,27 +189,44 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> eleData, unsigned in
                 else {
                     this->tileInfo[i][j].IsSolid = false; // Set the tile as not solid
                 }
-           // }
-          //  else {
-            //    throw std::runtime_error("Index in a map file does not match the amount of textures avaiable");
-                // Terminate the execution somehow
-           // }
         }
            
     }
 
+    // LOADS THE PLAYER POSITION
     // The player is 8x smaller than the walls
-    float player_width = unit_width/8;
-    float player_height = unit_height/8;
+    float player_width = unit_width/PLAYER_SIZE_OFFSET;
+    float player_height = unit_height/PLAYER_SIZE_OFFSET;
 
     // Player position offset
-    float player_pos_x = eleData[0][0] * unit_width;
-    float player_pos_y = eleData[0][1] * unit_height;
+    float player_pos_x = this->elementData[0][0] * unit_width;
+    float player_pos_y = this->elementData[0][1] * unit_height;
 
     this->PlayerPosition = glm::vec2(player_pos_x, player_pos_y);
     this->PlayerSize = glm::vec2(player_width, player_height);
 
-    // LOOP TO READ THE ELEMENTS
+    // LOOP TO READ THE ELEMENTS STARTING FROM THE 2nd POSITION
+
+    // Get the size of the elements
+    float element_width = unit_width/ELEMENTS_SIZE_OFFSET;
+    float element_height = unit_height/ELEMENTS_SIZE_OFFSET;
+    
+    // Assign attributes of each element
+    for(int i = 1; i < this->elementData.size(); i++) {
+
+        // Assign position
+        this->elementsInfo[i - 1].Position = glm::vec2(this->elementData[i][0] * unit_width, this->elementData[i][1] * unit_height);
+        // Assign size
+        this->elementsInfo[i - 1].Size = glm::vec2(element_width, element_height);
+
+        Texture2D pickedTexture;
+        // Define the floor texture
+        pickedTexture = ResourceManager::GetTexture(this->elementData[i][2]);
+        // Assign sprite
+        this->elementsInfo[i - 1].Sprite = pickedTexture;
+        // Assign solid
+        this->elementsInfo[i - 1].IsSolid = true;
+    }
     
 
 }

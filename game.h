@@ -24,6 +24,10 @@ class Game {
     unsigned int Width, Height; // Width and Height of the window
     int action; // Key action type
 
+    // FLAGS
+    bool keyChartOn = false;
+
+
     // Level Maps
     std::vector<GameLevel> Levels;
     unsigned int Level;

@@ -250,6 +250,19 @@ void Game::ProcessInput(float dt)
        Player->isRunning = false;
     }
 
+    // Show the Key Chart
+    if(this->Keys[GLFW_KEY_TAB]) {
+
+        if(!this->keyChartOn) keyChartOn = true;
+        std::cout << keyChartOn << std::endl;
+
+    }
+    // Hide Key Chart when the key is released
+    if(!this->Keys[GLFW_KEY_TAB] && keyChartOn) {
+        keyChartOn = false;
+        std::cout << keyChartOn << std::endl;
+    }
+
 }
 
 void Game::Render()

@@ -31,8 +31,10 @@ public:
     // Matrix that contains the ceiling tiles gameObject information
     std::vector<std::vector<GameObject>> ceilingInfo;
 
-    // elements
-    std::vector<GameObject> Elements;
+    // elements map data
+    std::vector<std::vector<unsigned int>> elementData;
+    // Array that contains the sprites/elements gameObject information
+    std::vector<GameObject> elementsInfo;
 
     // player initial position
     glm::vec2 PlayerPosition, PlayerSize;
@@ -53,7 +55,7 @@ public:
     */
 private:
     // initialize level from tile data
-    void init(std::vector<std::vector<unsigned int>> elementData, unsigned int levelWidth, unsigned int levelHeight);
+    void init(unsigned int levelWidth, unsigned int levelHeight);
 };
 
 #endif

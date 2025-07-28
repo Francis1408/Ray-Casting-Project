@@ -7,10 +7,6 @@
 #include "textRenderer.h"
 #include "character.h"
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include <filesystem>
-
 #include <iostream>
 
 // GLFW function declarations
@@ -18,7 +14,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 // Calculate FPS function
-void showFPS(Shader &shader, float& fpsLastTime, unsigned int& fpsFrameCount);
+void showFPS(float& fpsLastTime, unsigned int& fpsFrameCount);
+
+void showSideMenu();
 
 // The Width of the screen
 const unsigned int SCREEN_WIDTH = 1024;
@@ -32,8 +30,6 @@ Game Breakout(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 
 TextRenderer *textRenderer;
-
-namespace fs = std::filesystem;
 
 int main(int argc, char *argv[])
 {
@@ -114,7 +110,9 @@ int main(int argc, char *argv[])
         
 
         // FPS Counter
-        showFPS(TextShader, fpsLastTime, fpsFrameCount);
+        showFPS(fpsLastTime, fpsFrameCount);
+        // Render side Menu
+        showSideMenu();
         
         glfwSwapBuffers(window);
     }
@@ -150,7 +148,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 
 // Function to calculate the FPS 
-void showFPS(Shader &shader, float& fpsLastTime, unsigned int& fpsFrameCount) {
+void showFPS(float& fpsLastTime, unsigned int& fpsFrameCount) {
     
     static float FPS = 0.0f; // Persistent value between calls
 
@@ -169,4 +167,17 @@ void showFPS(Shader &shader, float& fpsLastTime, unsigned int& fpsFrameCount) {
     textRenderer->DrawText("FPS: " + std::to_string(static_cast<int>(FPS)),
         0.0f, 480.0f, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
 
+}
+
+void showSideMenu() {
+
+    if(!Breakout.keyChartOn) {
+
+        textRenderer->DrawText("Show Controls [TAB]",
+            0.0f, 450.0f, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
+    }
+    else {
+        textRenderer->DrawText("LOL",
+            0.0f, 450.0f, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
+    }
 }

@@ -33,13 +33,14 @@ TextRenderer *textRenderer;
 
 int main(int argc, char *argv[])
 {
+    // Starts glfw and defines the version that will be used
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 
-
+    // Cretes the window
     GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Breakout", nullptr, nullptr);
     glfwMakeContextCurrent(window);
 
@@ -63,6 +64,7 @@ int main(int argc, char *argv[])
     // initialize game
     // ---------------
     Breakout.Init();
+    
 
     // Create the text shader
     Shader TextShader = ResourceManager::GetShader("text");

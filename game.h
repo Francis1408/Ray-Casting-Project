@@ -27,6 +27,8 @@ class Game {
     // FLAGS
     bool keyChartOn = false;
 
+    // ZBuffer
+    std::vector<float> ZBuffer;
 
     // Level Maps
     std::vector<GameLevel> Levels;
@@ -47,6 +49,7 @@ class Game {
     void Render();
     void RayCasting();
     void FloorCasting();
+    void SpriteCasting();
 
 
 };

@@ -27,6 +27,7 @@ Texture2D   *floorTexture;
 //Scale of the level map in the grid size
 float mapScale;
 
+
 // Map size in grid units
 unsigned int mapSizeGridX;
 unsigned int mapSizeGridY;
@@ -104,7 +105,12 @@ void Game::Init()
    
    Shader = ResourceManager::GetShader("floor");
    FloorRenderer = new SpriteRenderer(Shader);
+
+   // ========================= Buffers =======================================
    
+   // Z Buffer to handle sprite depth
+   // Each position contains the distance of each vertical stripe from the horizontal wall
+    this->ZBuffer.resize(static_cast<int>(Width/2));
    
    // =================== Load textures ========================================
    
@@ -117,7 +123,8 @@ void Game::Init()
    floorObj = new GameObject();
    
    // load levels
-   GameLevel one; one.Load("Levels/two.lvl", "Levels/two.flo", "Levels/two.cel", "Levels/one.ele",  this->Width/2, this->Height);
+   GameLevel one; 
+   one.Load("Levels/two.lvl", "Levels/two.flo", "Levels/two.cel", "Levels/one.ele",  this->Width/2, this->Height);
    this->Levels.push_back(one);
    this->Level = 0;
    
@@ -125,7 +132,6 @@ void Game::Init()
     mapScale = this->Levels[this->Level].tileSize;
     mapSizeGridX = this->Levels[this->Level].tileData[0].size();
     mapSizeGridY = this->Levels[this->Level].tileData.size();
-
     
     // Creates player instance                                                              Plane is perpendicular to the direction/ (0.66f) => FOV is 2 * atan(0.66/1.0)= 66° 
     Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, ResourceManager::GetTexture(7), glm::vec3(1.0f, 1.0f, 0.0f), mapScale, 5.0f, glm::vec2(-1.0f, 0.0f), glm::vec2(0.0f, 0.66f));
@@ -279,8 +285,8 @@ void Game::Render()
    // look->Draw(*Renderer);
     FloorCasting();
     RayCasting();
+    SpriteCasting();
 
-   
     
 }
 
@@ -466,8 +472,10 @@ void Game::Render()
         
 
         // Draw wall slice
-      wallObj->Draw(*WallRenderer);
-        
+        wallObj->Draw(*WallRenderer);
+
+        // Save the vertical stripe(1D) distance in the buffer
+        this->ZBuffer[x] = perpWallDistance;
     }
     
 }
@@ -581,4 +589,8 @@ void Game::FloorCasting() {
     floorObj->Color = glm::vec3(0.5f, 0.5f, 0.5f);
     
     floorObj->Draw(*FloorRenderer);
+}
+
+void Game::SpriteCasting() {
+
 }

@@ -10,10 +10,12 @@
 #include "glm/gtc/type_ptr.hpp"
 
 #include <iostream>
-#include <vector> 
+#include <vector>
+#include <algorithm> 
 
 SpriteRenderer *WallRenderer;
 SpriteRenderer *FloorRenderer;
+SpriteRenderer *SpRenderer;
 
 
 // Player stats
@@ -22,6 +24,7 @@ PlayerObject *Player;
 GameObject  *look;
 GameObject  *wallObj;
 GameObject  *floorObj;
+GameObject  *spriteObject;
 Texture2D   *floorTexture;
 
 //Scale of the level map in the grid size
@@ -47,6 +50,7 @@ Game::~Game()
 {
     delete WallRenderer;
     delete FloorRenderer;
+    delete SpRenderer;
     delete Player;
     delete look;
     delete wallObj;
@@ -62,7 +66,7 @@ void Game::Init()
     ResourceManager::LoadShader("Shaders/shaderCoordinate.vs", "Shaders/shaderWall.fs", nullptr, "wall");
     ResourceManager::LoadShader("Shaders/shaderCoordinate.vs", "Shaders/shaderFloor.fs", nullptr, "floor");
     ResourceManager::LoadShader("Shaders/shaderText.vs", "Shaders/shaderText.fs", nullptr, "text");
-
+    ResourceManager::LoadShader("Shaders/shaderSrpite.vs", "Shaders/shaderSrpite.fs", nullptr, "sprite");
 
    // Define the View Matrix - Game is oriented from top to bottom
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->Width), static_cast<float>(this->Height), 0.0f, -1.0f, 1.0f);
@@ -96,6 +100,8 @@ void Game::Init()
    ResourceManager::GetShader("wall").SetMat4("projection", projection);
    ResourceManager::GetShader("floor").Use().SetInt("image", 0);
    ResourceManager::GetShader("floor").SetMat4("projection", projection);
+   ResourceManager::GetShader("sprite").Use().SetInt("image", 0);
+   ResourceManager::GetShader("sprite").SetMat4("projection", projection);
    ResourceManager::GetShader("text").Use().SetMat4("text", 0);
    ResourceManager::GetShader("text").SetMat4("projection", textProjection);
    
@@ -105,6 +111,9 @@ void Game::Init()
    
    Shader = ResourceManager::GetShader("floor");
    FloorRenderer = new SpriteRenderer(Shader);
+
+   Shader = ResourceManager::GetShader("sprite");
+   SpRenderer = new SpriteRenderer(Shader);
 
    // ========================= Buffers =======================================
    
@@ -132,6 +141,11 @@ void Game::Init()
     mapScale = this->Levels[this->Level].tileSize;
     mapSizeGridX = this->Levels[this->Level].tileData[0].size();
     mapSizeGridY = this->Levels[this->Level].tileData.size();
+
+    // Resize the spriteDistance based on the numbers of sprites avaiable
+    this->numSprites = Levels[Level].elementsInfo.size();
+    this->spriteDistance.resize(numSprites);
+    this->spriteOrder.resize(numSprites);
     
     // Creates player instance                                                              Plane is perpendicular to the direction/ (0.66f) => FOV is 2 * atan(0.66/1.0)= 66° 
     Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, ResourceManager::GetTexture(7), glm::vec3(1.0f, 1.0f, 0.0f), mapScale, 5.0f, glm::vec2(-1.0f, 0.0f), glm::vec2(0.0f, 0.66f));
@@ -592,5 +606,75 @@ void Game::FloorCasting() {
 }
 
 void Game::SpriteCasting() {
+
+    // Sort the sprites based on distance and save it on a distance array
+    for(int i = 0; i < numSprites; i++) {
+
+        glm::vec2 spritePos = glm::vec2(Levels[Level].elementsInfo[i].Position.x, Levels[Level].elementsInfo[i].Position.y);
+
+        // Assing an ID to the sprite
+        spriteOrder[i] = i;
+        // Calculates sprite distance relative to the player
+        spriteDistance[i] = ((Player->Position.x - spritePos.x) * (Player->Position.x - spritePos.x) +
+                            (Player->Position.y - spritePos.y) * (Player->Position.y - spritePos.y));
+                            
+    }
+
+    // Calls the sort sprite method
+    SortSprites();
+
+    // Converts the sprite coordinates in the view space (relative to the camera)
+    for(int i = 0; i < numSprites; i++) {
+        
+        // Translate sprite position to relative to camera
+        glm::vec2 spriteCoord = glm::vec2(Levels[Level].elementsInfo[i].Position.x - Player->Position.x,
+                                          Levels[Level].elementsInfo[i].Position.y - Player->Position.y);
+        
+      //transform sprite with the inverse camera matrix
+      // [ planeX   dirX ] -1                                       [ dirY      -dirX ]
+      // [               ]       =  1/(planeX*dirY-dirX*planeY) *   [                 ]
+      // [ planeY   dirY ]                                          [ -planeY  planeX ]
+        float invDet = 1.0f / (Player->plane.x * Player->direction.y - Player->direction.x * Player->plane.y);
+
+
+        // spriteTransform.x = Where the sprite appears horizontally relative to the camera(left or right)
+        // spriteTransform.y = how far away the sprite is (depth)
+        glm::vec2 spriteTransform = glm::vec2(invDet * (Player->direction.y * spriteCoord.x - Player->direction.x * spriteCoord.y),
+                                              invDet * (-Player->plane.y * spriteCoord.x + Player->plane.x * spriteCoord.y));   
+
+        // Computes the sprite's camera-space X coordinate to the 2D screen
+        // The width is divided by 4 because we use only half of the screen
+        int spriteScreenX = static_cast<int>((Width/4) * (1 + spriteTransform.x/ spriteTransform.y));
+
+        // Calculates the height and width of the sprite on screen
+        // As the transformY gets bigger, smaller will the the sprite
+        float spriteHeight = abs(static_cast<int>(Height/(spriteTransform.y)));
+        float spriteWidth = abs(static_cast<int>(Height/(spriteTransform.y)));
+        // Gets the drawing coordinates
+        glm::vec2 drawStart = glm::vec2(-spriteWidth/2 + spriteScreenX, -spriteHeight/2 + Height/2);
+        glm::vec2 drawEnd = glm::vec2(spriteWidth/2 + spriteScreenX, spriteHeight/2 + Height/2);
+
+
+
+    }
+}
+
+void Game::SortSprites() {
+
+    // Joins the sprite distance with its ID
+    std::vector<std::pair<float, int>> sprites(numSprites);
+    for(int i = 0; i < numSprites; i++) {
+        sprites[i].first = spriteDistance[i];
+        sprites[i].second = spriteOrder[i];
+    }
+
+    // Sorts the distances
+    std::sort(sprites.begin(), sprites.end());
+
+    // restore in reverse order to go from farthest to nearest
+    for(int i = 0; i < numSprites; i++) {
+        spriteDistance[i] = sprites[numSprites - i - 1].first;
+        spriteOrder[i] = sprites[numSprites - i - 1].second;
+      }
 
 }

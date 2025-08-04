@@ -5,7 +5,7 @@
 
 // The size proportion from the elements compared to the walls
 const int PLAYER_SIZE_OFFSET = 8; // The player is 8x smaller than the walls
-const int ELEMENTS_SIZE_OFFSET = 8; // The elements are 8x smaller than the walls
+const int ELEMENTS_SIZE_OFFSET = 1; // The elements are 8x smaller than the walls
 
 
 void GameLevel::Load(const char *mapFile, const char *floorFile, const char *ceilingFile, const char  *elementFile, 

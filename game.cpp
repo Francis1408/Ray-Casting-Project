@@ -628,8 +628,8 @@ void Game::SpriteCasting() {
     for(int i = 0; i < numSprites; i++) {
         
     // Translate sprite position to relative to camera
-    glm::vec2 spriteCoord = glm::vec2(Levels[Level].elementsInfo[i].Position.x - Player->Position.x,
-    Levels[Level].elementsInfo[i].Position.y - Player->Position.y);
+    glm::vec2 spriteCoord = glm::vec2((Levels[Level].elementsInfo[i].Position.x/mapScale) - (Player->Position.x/mapScale),
+    (Levels[Level].elementsInfo[i].Position.y/mapScale) - (Player->Position.y/mapScale));
     
     //transform sprite with the inverse camera matrix
     // [ planeX   dirX ] -1                                       [ dirY      -dirX ]
@@ -645,8 +645,8 @@ void Game::SpriteCasting() {
     
     // Computes the sprite's camera-space X coordinate to the 2D screen
     // The width is divided by 4 because we use only half of the screen
-    int spriteScreenX = static_cast<int>((Width/4) * (1 + spriteTransform.x/ spriteTransform.y));
-    
+    int spriteScreenX = static_cast<int>( ((Width/2) * (1 + spriteTransform.x/ spriteTransform.y)));
+    std::cout << spriteScreenX << std::endl;
     // Calculates the height and width of the sprite on screen
     // As the transformY gets bigger, smaller will the the sprite
     float spriteHeight = abs(static_cast<int>(Height/(spriteTransform.y)));
@@ -661,12 +661,16 @@ void Game::SpriteCasting() {
     // drawStart = Y Starting coordinate 
     // Size = (Density of the ray = 1 pixel, drawEnd - drawStart)
 
-    spriteObj->Position = drawStart; 
-    spriteObj->Size =  drawEnd - drawStart;
-    spriteObj->Sprite = Levels[Level].elementsInfo[i].Sprite;
-    spriteObj->Color = Levels[Level].elementsInfo[i].Color;
+    if(spriteTransform.y > 0) {
+
         
-    spriteObj->Draw(*SpRenderer);
+        spriteObj->Position = drawStart; 
+        spriteObj->Size =  drawEnd - drawStart;
+        spriteObj->Sprite = Levels[Level].elementsInfo[i].Sprite;
+        spriteObj->Color = Levels[Level].elementsInfo[i].Color;
+        
+        spriteObj->Draw(*SpRenderer);
+    }
         
     }
     

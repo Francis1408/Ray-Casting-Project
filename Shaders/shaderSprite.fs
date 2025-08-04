@@ -16,4 +16,5 @@ void main()
 
     // GL_REPEAT willt tile the texture, so dont need to fract()
     color = vec4(spriteColor, 1.0) * texture(image, TexCoords);
+    gl_Frag
 } 

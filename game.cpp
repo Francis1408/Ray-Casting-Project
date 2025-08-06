@@ -641,20 +641,44 @@ void Game::SpriteCasting() {
     // spriteTransform.x = Where the sprite appears horizontally relative to the camera(left or right)
     // spriteTransform.y = how far away the sprite is (depth)
     glm::vec2 spriteTransform = glm::vec2(invDet * (Player->direction.y * spriteCoord.x - Player->direction.x * spriteCoord.y),
-    invDet * (-Player->plane.y * spriteCoord.x + Player->plane.x * spriteCoord.y));   
+                                          invDet * (-Player->plane.y * spriteCoord.x + Player->plane.x * spriteCoord.y));   
     
     // Computes the sprite's camera-space X coordinate to the 2D screen
     // The width is divided by 4 because we use only half of the screen
     int spriteScreenX = static_cast<int>( ((Width/2) * (1 + spriteTransform.x/ spriteTransform.y)));
-    std::cout << spriteScreenX << std::endl;
+    //std::cout << spriteScreenX << std::endl;
     // Calculates the height and width of the sprite on screen
     // As the transformY gets bigger, smaller will the the sprite
-    float spriteHeight = abs(static_cast<int>(Height/(spriteTransform.y)));
-    float spriteWidth = abs(static_cast<int>(Height/(spriteTransform.y)));
+    int spriteHeight = abs(static_cast<int>(Height/(spriteTransform.y)));
+    int spriteWidth = abs(static_cast<int>(Height/(spriteTransform.y)));
     // Gets the drawing coordinates
-    glm::vec2 drawStart = glm::vec2(-spriteWidth/2 + spriteScreenX, -spriteHeight/2 + Height/2);
-    glm::vec2 drawEnd = glm::vec2(spriteWidth/2 + spriteScreenX, spriteHeight/2 + Height/2);
     
+    // Original drawing coord without clamping
+    float originalStartX = -spriteWidth/2 + spriteScreenX;
+    float originalEndX = spriteWidth/2 + spriteScreenX;
+
+    // Creates the drawing coord vectors
+    glm::vec2 drawStart = glm::vec2(originalStartX, -spriteHeight/2 + Height/2);
+    glm::vec2 drawEnd = glm::vec2(originalEndX, spriteHeight/2 + Height/2);
+    
+    // Clamp the horizontal drawing
+    drawStart.x = std::max(drawStart.x, static_cast<float>(Width/2));
+    drawEnd.x = std::min(drawEnd.x, static_cast<float>(Width)); 
+
+    // ============ TEXTURE HANDLING ==============
+
+    // Calculate the portion of the texture which need to be drawn
+    // Normalized texX coordinate range
+    // uv_coord_start = percentace of where the drawing tex should start
+    // uv_coord_end = percentace of where the drawing tex should end
+    float uv_coord_start = (drawStart.x - originalStartX) / (originalEndX - originalStartX);
+    float uv_coord_end = (drawEnd.x - originalStartX) / (originalEndX - originalStartX); 
+    
+    // 
+    ResourceManager::GetShader("sprite").Use().SetFloat("u_start", uv_coord_start);
+    ResourceManager::GetShader("sprite").Use().SetFloat("u_end", uv_coord_end);
+
+
     // Create a gameObject to draw on the screen
     
     // X + Width/2 = Starting X-coordinate

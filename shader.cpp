@@ -71,6 +71,13 @@ void Shader::SetFloat(const std::string &name, float value, bool useShader)
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value); 
 }
 // ------------------------------------------------------------------------
+void Shader::SetVec1(const std::string &name, const float *value, unsigned int count, bool useShader) 
+{ 
+    if (useShader)
+        this->Use();
+    glUniform1fv(glGetUniformLocation(ID, name.c_str()), count, value); 
+}
+// ------------------------------------------------------------------------
 void Shader::SetVec2(const std::string &name, const glm::vec2 &value, bool useShader) 
 { 
     if (useShader)

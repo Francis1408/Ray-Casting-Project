@@ -37,7 +37,7 @@ unsigned int mapSizeGridY;
 
 
 // RayDensity = How thick is each wall slice
-unsigned int rayDensity = 2;
+unsigned int rayDensity = 1;
 
 
 Game::Game(unsigned int width, unsigned int height) 
@@ -103,6 +103,7 @@ void Game::Init()
    ResourceManager::GetShader("floor").SetMat4("projection", projection);
    ResourceManager::GetShader("sprite").Use().SetInt("image", 0);
    ResourceManager::GetShader("sprite").SetMat4("projection", projection);
+   ResourceManager::GetShader("sprite").SetFloat("screenWidth", static_cast<float>(this->Width)); // Pass the screen width to the sprite fragment shader
    ResourceManager::GetShader("text").Use().SetMat4("text", 0);
    ResourceManager::GetShader("text").SetMat4("projection", textProjection);
    
@@ -490,7 +491,12 @@ void Game::Render()
         // Draw wall slice
         wallObj->Draw(*WallRenderer);
 
+        this->ZBuffer[x] = perpWallDistance;
+        //std::cout << perpWallDistance << std::endl;
+
     }
+
+    ResourceManager::GetShader("sprite").Use().SetVec1("ZBuffer", this->ZBuffer.data(), Width/2);
     
 }
 
@@ -679,15 +685,21 @@ void Game::SpriteCasting() {
     ResourceManager::GetShader("sprite").Use().SetFloat("u_end", uv_coord_end);
 
 
-    // Create a gameObject to draw on the screen
-    
-    // X + Width/2 = Starting X-coordinate
-    // drawStart = Y Starting coordinate 
-    // Size = (Density of the ray = 1 pixel, drawEnd - drawStart)
-
+    // If the sprite is not behind the player
     if(spriteTransform.y > 0) {
 
+        //std::cout << "Sprite: "<<spriteTransform.y << std::endl;
+
+        // Pass the transformY to the fragment shader
+        ResourceManager::GetShader("sprite").Use().SetFloat("spriteDepth", spriteTransform.y);
         
+        // Set the Quad dimensions
+
+        // Create a gameObject to draw on the screen
+    
+        // X + Width/2 = Starting X-coordinate
+        // drawStart = Y Starting coordinate 
+        // Size = (Density of the ray = 1 pixel, drawEnd - drawStart)
         spriteObj->Position = drawStart; 
         spriteObj->Size =  drawEnd - drawStart;
         spriteObj->Sprite = Levels[Level].elementsInfo[i].Sprite;

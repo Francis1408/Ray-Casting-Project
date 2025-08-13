@@ -31,6 +31,8 @@ public:
     // ------------------------------------------------------------------------
     void SetFloat(const std::string &name, float value, bool useShader = false);
     // ------------------------------------------------------------------------
+    void SetVec1(const std::string &name, const float *value, unsigned int count, bool useShader = false);
+    // ------------------------------------------------------------------------
     void SetVec2(const std::string &name, const glm::vec2 &value, bool useShader = false);
     void SetVec2(const std::string &name, float x, float y, bool useShader = false);
     // ------------------------------------------------------------------------

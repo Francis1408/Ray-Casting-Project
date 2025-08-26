@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #include "gameLevel.h"
+#include "rayCasting.h"
 
 #include <iostream>
 #include <vector>
@@ -42,6 +43,9 @@ class Game {
     std::vector<GameLevel> Levels;
     unsigned int Level;
 
+    // RayCasting Object
+    RayCasting* RayCaster;
+
     // Constructor
     Game(unsigned int width, unsigned int height);
 
@@ -55,10 +59,6 @@ class Game {
     void ProcessInput(float dt);
     void Update(float dt);
     void Render();
-    void RayCasting();
-    void FloorCasting();
-    void SpriteCasting();
-    void SortSprites();
 
 };
 

@@ -2,6 +2,7 @@
 #include "gameLevel.h"
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 // The size proportion from the elements compared to the walls
 const int PLAYER_SIZE_OFFSET = 8; // The player is 8x smaller than the walls

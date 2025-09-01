@@ -143,7 +143,7 @@ void Game::Init()
    
    // load levels
    GameLevel one; 
-   one.Load("Levels/two.lvl", "Levels/two.flo", "Levels/two.cel", "Levels/one.ele",  this->Width/2, this->Height);
+   one.Load("Levels/one.lvl", "Levels/one.flo", "Levels/one.cel", "Levels/one.ele",  this->Width/2, this->Height);
    this->Levels.push_back(one);
    this->Level = 0;
    
@@ -158,7 +158,7 @@ void Game::Init()
     this->spriteOrder.resize(numSprites);
     
     // Creates player instance                                                              Plane is perpendicular to the direction/ (0.66f) => FOV is 2 * atan(0.66/1.0)= 66° 
-    Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, ResourceManager::GetTexture(7), glm::vec3(1.0f, 1.0f, 0.0f), mapScale, 5.0f, glm::vec2(-1.0f, 0.0f), glm::vec2(0.0f, 0.66f));
+    Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, ResourceManager::GetTexture(7), glm::vec3(1.0f, 1.0f, 0.0f), mapScale, 5.0f, glm::vec2(-1.0f, 0.0f), glm::vec2(0.0f, 0.66f), 0.2f);
 
 
 
@@ -212,36 +212,84 @@ void Game::ProcessInput(float dt)
     float velocity = Player->velocity *dt;
     float rotSpeed = Player->rotSpeed *dt;
 
-    if (this -> Keys[GLFW_KEY_W]) { // Apply translation
-        
-        
-    // Apply translation based on the position of the player
-        Player->Position.x += velocity * Player->direction.x;
-        Player->Position.y += velocity * Player->direction.y;
+// ========== MOVING FORWARD =============================
 
+    if (this -> Keys[GLFW_KEY_W]) { 
         
-    // ---------- Debug - Apply changes to the direction arrow ----------------
-        look->Position.x = Player->Position.x + Player->Size.x/4;
+    // Predict next position
+    glm::vec2 nextPosition = glm::vec2(Player->Position.x + velocity * Player->direction.x,
+                                       Player->Position.y + velocity * Player->direction.y);
+    
+
+    // Convert to map grid coords
+    glm::vec2 playerGrid = glm::vec2(Player->Position.x / mapScale,
+                                     Player->Position.y / mapScale);
+
+
+    // Vector that checks the hit box position in the grid for the nextMove
+    glm::vec2 checkPos = glm::vec2((nextPosition.x/mapScale) + (Player->direction.x > 0 ? Player->hitbox : -Player->hitbox),
+                                   (nextPosition.y/mapScale) + (Player->direction.y > 0 ? Player->hitbox : -Player->hitbox));
+
+    
+    // Check on each axis if the player can move. If does, than change the player position to that axis
+    // ---- X AXIS --------
+    if(Levels[Level].tileData[static_cast<int>(playerGrid.y)][static_cast<int>(checkPos.x)] == 0) {
+        // Apply translation based on the position of the player
+        Player->Position.x = nextPosition.x;
+        //Debug - Apply changes to the direction arrow 
+        look->Position.x = Player->Position.x + Player->Size.x/4;    
+    }
+
+    // ---- Y AXIS --------
+    if(Levels[Level].tileData[static_cast<int>(checkPos.y)][static_cast<int>(playerGrid.x)] == 0) {
+        // Apply translation based on the position of the player
+        Player->Position.y = nextPosition.y;
+        // Debug - Apply changes to the direction arrow 
         look->Position.y = Player->Position.y - Player->Size.y*2;
-
-
-        printf("X: %.2f , Y: %.2f\n", Player->Position.x, Player->Position.y);
+   
+    }
+   
+        //printf("X: %.2f , Y: %.2f\n", Player->Position.x/mapScale, Player->Position.y/mapScale);
         //printf("mapX: %d , mapY: %d\n", mapx, mapy);
     }
+
+// ========== MOVING BACKWARS =============================
     if (this -> Keys[GLFW_KEY_S]) { 
-        
-    // Apply translation based on the position of the player
-        Player->Position.x -= velocity * Player->direction.x;
-        Player->Position.y -= velocity * Player->direction.y;
+
+    // Predict next position
+        glm::vec2 nextPosition = glm::vec2(Player->Position.x - velocity * Player->direction.x,
+                                           Player->Position.y - velocity * Player->direction.y);
 
 
-    // ---------- Debug - Apply changes to the direction arrow ----------------
-        look->Position.x = Player->Position.x + Player->Size.x/4;
-        look->Position.y = Player->Position.y - Player->Size.y*2;
-        
+        // Convert to map grid coords
+        glm::vec2 playerGrid = glm::vec2(Player->Position.x / mapScale,
+                                         Player->Position.y / mapScale);
 
-      printf("X: %.2f , Y: %.2f\n", Player->Position.x, Player->Position.y);
-      //printf("mapX: %d, mapY: %d\n", mapx, mapy);
+
+        // Vector that checks the hit box position in the grid for the nextMove
+        glm::vec2 checkPos = glm::vec2((nextPosition.x/mapScale) + (Player->direction.x < 0 ? Player->hitbox : -Player->hitbox),
+                                       (nextPosition.y/mapScale) + (Player->direction.y < 0 ? Player->hitbox : -Player->hitbox));
+
+
+        // Check on each axis if the player can move. If does, than change the player position to that axis
+        // ---- X AXIS --------
+        if(Levels[Level].tileData[static_cast<int>(playerGrid.y)][static_cast<int>(checkPos.x)] == 0) {
+            // Apply translation based on the position of the player
+            Player->Position.x = nextPosition.x;
+            //Debug - Apply changes to the direction arrow 
+            look->Position.x = Player->Position.x + Player->Size.x/4;    
+        }
+
+        // ---- Y AXIS --------
+        if(Levels[Level].tileData[static_cast<int>(checkPos.y)][static_cast<int>(playerGrid.x)] == 0) {
+            // Apply translation based on the position of the player
+            Player->Position.y = nextPosition.y;
+            // Debug - Apply changes to the direction arrow 
+            look->Position.y = Player->Position.y - Player->Size.y*2;
+        }
+
+        //printf("X: %.2f , Y: %.2f\n", Player->Position.x/mapScale, Player->Position.y/mapScale);
+        //printf("mapX: %d , mapY: %d\n", mapx, mapy);
        
     }
     if (this -> Keys[GLFW_KEY_A]) { 

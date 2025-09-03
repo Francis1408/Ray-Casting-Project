@@ -30,7 +30,7 @@ $(OUT): $(CPP_FILES) $(GLAD_FILES)
 
 # Run target
 run: $(OUT)
-	./$(OUT)
+	./$(OUT) $(ARGS)
 
 # Clean target
 clean:

@@ -12,6 +12,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm> 
+#include <filesystem>
 
 SpriteRenderer *WallRenderer;
 SpriteRenderer *FloorRenderer;
@@ -40,6 +41,8 @@ unsigned int mapSizeGridY;
 // RayDensity = How thick is each wall slice
 unsigned int rayDensity = 1;
 
+namespace fs = std::filesystem;
+
 
 Game::Game(unsigned int width, unsigned int height) 
     : State(GAME_ACTIVE), Keys(), Width(width), Height(height)
@@ -62,8 +65,26 @@ Game::~Game()
     floorTexture = nullptr;
 }
 
-void Game::Init()
+void Game::Init(int argc, char* argv[])
 {
+
+    // Check if the number of arguments are correct
+    if (argc < 5) {
+        std::cerr << "Usage: " << argv[0]
+                  << " <level.lvl> <level.flo> <level.cel> <level.ele>"
+                  << std::endl;
+        exit(1);
+    }
+
+    // Validate the file paths
+    for (int i = 1; i <= 4; i++) {
+        if (!fs::exists(argv[i])) {
+            std::cerr << "Error: file not found -> " << argv[i] << std::endl;
+            exit(1);
+        }
+    }
+
+
     // load shaders
     ResourceManager::LoadShader("Shaders/shaderCoordinate.vs", "Shaders/shaderWall.fs", nullptr, "wall");
     ResourceManager::LoadShader("Shaders/shaderCoordinate.vs", "Shaders/shaderFloor.fs", nullptr, "floor");
@@ -149,7 +170,7 @@ void Game::Init()
    
    // load levels
    GameLevel one; 
-   one.Load("Levels/one.lvl", "Levels/one.flo", "Levels/one.cel", "Levels/one.ele",  this->Width/2, this->Height);
+   one.Load(argv[1], argv[2], argv[3], argv[4], this->Width/2, this->Height);
    this->Levels.push_back(one);
    this->Level = 0;
    

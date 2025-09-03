@@ -53,7 +53,7 @@ class Game {
     ~Game();
 
     // Initialize game state (load all shaders/textures/levels)
-    void Init();
+    void Init(int argc, char* argv[]);
 
     // Game Loop
     void ProcessInput(float dt);

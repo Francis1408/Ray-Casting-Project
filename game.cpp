@@ -17,12 +17,12 @@ SpriteRenderer *WallRenderer;
 SpriteRenderer *FloorRenderer;
 SpriteRenderer *SpRenderer;
 SpriteRenderer *MapRenderer;
+SpriteRenderer *PlayerRenderer;
 
 
 // Player stats
 PlayerObject *Player;
 
-GameObject  *look;
 GameObject  *wallObj;
 GameObject  *floorObj;
 GameObject  *spriteObj;
@@ -52,8 +52,8 @@ Game::~Game()
     delete WallRenderer;
     delete FloorRenderer;
     delete SpRenderer;
+    delete PlayerRenderer;
     delete Player;
-    delete look;
     delete wallObj;
     delete floorObj;
     delete spriteObj;
@@ -70,6 +70,7 @@ void Game::Init()
     ResourceManager::LoadShader("Shaders/shaderText.vs", "Shaders/shaderText.fs", nullptr, "text");
     ResourceManager::LoadShader("Shaders/shaderSprite.vs", "Shaders/shaderSprite.fs", nullptr, "sprite");
     ResourceManager::LoadShader("Shaders/shaderCoordinate.vs", "Shaders/shaderCoordinate.fs", nullptr, "map");
+    ResourceManager::LoadShader("Shaders/shaderCoordinate.vs", "Shaders/shaderPlayer.fs", nullptr, "player");
 
    // Define the View Matrix - Game is oriented from top to bottom
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->Width), static_cast<float>(this->Height), 0.0f, -1.0f, 1.0f);
@@ -110,6 +111,8 @@ void Game::Init()
    ResourceManager::GetShader("text").SetMat4("projection", textProjection);
    ResourceManager::GetShader("map").Use().SetInt("image", 0);
    ResourceManager::GetShader("map").SetMat4("projection", projection);
+   ResourceManager::GetShader("player").Use().SetInt("image", 0);
+   ResourceManager::GetShader("player").SetMat4("projection", projection);
    
    // Set render-specific controls
    Shader Shader = ResourceManager::GetShader("wall");
@@ -123,6 +126,9 @@ void Game::Init()
 
    Shader = ResourceManager::GetShader("map");
    MapRenderer = new SpriteRenderer(Shader);
+
+   Shader = ResourceManager::GetShader("player");
+   PlayerRenderer = new SpriteRenderer(Shader);
 
    // ========================= Buffers =======================================
    
@@ -158,15 +164,8 @@ void Game::Init()
     this->spriteOrder.resize(numSprites);
     
     // Creates player instance                                                              Plane is perpendicular to the direction/ (0.66f) => FOV is 2 * atan(0.66/1.0)= 66° 
-    Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, ResourceManager::GetTexture(7), glm::vec3(1.0f, 1.0f, 0.0f), mapScale, 5.0f, glm::vec2(-1.0f, 0.0f), glm::vec2(0.0f, 0.66f), 0.2f);
+    Player = new PlayerObject(one.PlayerPosition, one.PlayerSize, ResourceManager::GetTexture(12), glm::vec3(1.0f, 1.0f, 0.0f), mapScale, 5.0f, glm::vec2(-1.0f, 0.0f), glm::vec2(0.0f, 0.66f), 0.2f);
 
-
-
-    // creating a visual arrow to show the players direction
-    glm::vec2 lookPos = glm::vec2(one.PlayerPosition.x + one.PlayerSize.x/4, one.PlayerPosition.y - one.PlayerSize.y*2);
-    look = new GameObject(lookPos, glm::vec2(one.PlayerSize.x/2,  (one.PlayerSize.y*5)/2), ResourceManager::GetTexture(7), glm::vec3(1.0f, 1.0f, 0.0f));
-    look->Pivot = glm::vec2(0.5f, 1.0f);
-    look->Rotation = atan2(Player->direction.y, Player->direction.x) *  (180.0f / M_PI) + 90.0f;
 
     printf("DirX: %.2f  DirY: %.2f\n", Player->direction.x, Player->direction.y );
 
@@ -235,17 +234,13 @@ void Game::ProcessInput(float dt)
     // ---- X AXIS --------
     if(Levels[Level].tileData[static_cast<int>(playerGrid.y)][static_cast<int>(checkPos.x)] == 0) {
         // Apply translation based on the position of the player
-        Player->Position.x = nextPosition.x;
-        //Debug - Apply changes to the direction arrow 
-        look->Position.x = Player->Position.x + Player->Size.x/4;    
+        Player->Position.x = nextPosition.x;   
     }
 
     // ---- Y AXIS --------
     if(Levels[Level].tileData[static_cast<int>(checkPos.y)][static_cast<int>(playerGrid.x)] == 0) {
         // Apply translation based on the position of the player
         Player->Position.y = nextPosition.y;
-        // Debug - Apply changes to the direction arrow 
-        look->Position.y = Player->Position.y - Player->Size.y*2;
    
     }
    
@@ -275,17 +270,13 @@ void Game::ProcessInput(float dt)
         // ---- X AXIS --------
         if(Levels[Level].tileData[static_cast<int>(playerGrid.y)][static_cast<int>(checkPos.x)] == 0) {
             // Apply translation based on the position of the player
-            Player->Position.x = nextPosition.x;
-            //Debug - Apply changes to the direction arrow 
-            look->Position.x = Player->Position.x + Player->Size.x/4;    
+            Player->Position.x = nextPosition.x;  
         }
 
         // ---- Y AXIS --------
         if(Levels[Level].tileData[static_cast<int>(checkPos.y)][static_cast<int>(playerGrid.x)] == 0) {
             // Apply translation based on the position of the player
             Player->Position.y = nextPosition.y;
-            // Debug - Apply changes to the direction arrow 
-            look->Position.y = Player->Position.y - Player->Size.y*2;
         }
 
         //printf("X: %.2f , Y: %.2f\n", Player->Position.x/mapScale, Player->Position.y/mapScale);
@@ -309,9 +300,6 @@ void Game::ProcessInput(float dt)
         //printf("DirX: %.2f  DirY: %.2f\n", Player->direction.x, Player->direction.y );
         //printf(" PlaneX: %.2f  PlaneY: %.2f", Player->plane.x, Player->plane.y );
        
-        // ---------- Debug - Apply changes to the direction arrow ----------------
-        // It has to add 90 at the end cuz the plane is flipped
-        look->Rotation = atan2(Player->direction.y, Player->direction.x) *  (180.0f / M_PI) + 90.0f;
 
       // printf(" angle: %.2f\n",look->Rotation);
     }
@@ -332,10 +320,6 @@ void Game::ProcessInput(float dt)
         
          //printf("DirX: %.2f  DirY: %.2f\n", Player->direction.x, Player->direction.y );
         //printf(" PlaneX: %.2f  PlaneY: %.2f", Player->plane.x, Player->plane.y );
-
-        // ---------- Debug - Apply changes to the direction arrow ----------------
-        // It has to add 90 at the end cuz the plane is flipped
-        look->Rotation = atan2(Player->direction.y, Player->direction.x) *  (180.0f / M_PI) + 90.0f;
 
        // printf(" angle: %.2f\n",look->Rotation);
     }
@@ -362,13 +346,11 @@ void Game::ProcessInput(float dt)
     if(this->Keys[GLFW_KEY_TAB]) {
 
         if(!this->keyChartOn) keyChartOn = true;
-        std::cout << keyChartOn << std::endl;
 
     }
     // Hide Key Chart when the key is released
     if(!this->Keys[GLFW_KEY_TAB] && keyChartOn) {
         keyChartOn = false;
-        std::cout << keyChartOn << std::endl;
     }
 
 }
@@ -382,8 +364,7 @@ void Game::Render()
     RayCaster->WallCasting(this->ZBuffer);
     RayCaster->SpriteCasting(this->ZBuffer);
     this->Levels[this->Level].DrawMap(*MapRenderer);
-    Player->Draw(*MapRenderer);
-    look->Draw(*MapRenderer);
+    Player->Draw(*PlayerRenderer);
     
 }
 

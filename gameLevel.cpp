@@ -5,8 +5,8 @@
 #include <iostream>
 
 // The size proportion from the elements compared to the walls
-const int PLAYER_SIZE_OFFSET = 8; // The player is 8x smaller than the walls
-const int ELEMENTS_SIZE_OFFSET = 1; // The elements are 8x smaller than the walls
+const int PLAYER_SIZE_OFFSET = 3; // The player is 2x smaller than the walls
+const int ELEMENTS_SIZE_OFFSET = 1; 
 
 
 void GameLevel::Load(const char *mapFile, const char *floorFile, const char *ceilingFile, const char  *elementFile, 
@@ -227,10 +227,43 @@ void GameLevel::init(unsigned int screenWidth, unsigned int screenHeight)
         this->elementsInfo[i - 1].Sprite = pickedTexture;
         // Assign solid
         this->elementsInfo[i - 1].IsSolid = true;
+        // if(this->elementData[i][3])
+        //     this->elementsInfo[i - 1].IsSolid = true;
+        // else
+        //     this->elementsInfo[i - 1].IsSolid = false;
     }
     
 
 }
+
+// void GameLevel::BuildCollisionMap(float unit_width, float unit_height) {
+
+//     // Set the size of the collision map based on the mapSize and fill all with zero
+//     this->collisionData.resize(this->tileData.size(), std::vector<unsigned int>(this->tileData[0].size(), 0));
+
+//     // Fill the map postions which there are walls
+//     for(int i = 0; i < this->collisionData.size(); i++) {
+//         for(int j = 0; j < this->collisionData[i].size(); j++) {
+//             this->collisionData[i][j] = this->tileData[i][j];
+//         }
+//     }
+
+//     // finally check if there are solid elements
+//     for(auto &element : this->elementsInfo) {
+//         // if it is solid, fill its space in the map with 1
+//         if(element.IsSolid)
+//             this->collisionData[static_cast<int>(element.Position.y/unit_height)][static_cast<int>(element.Position.x/unit_width)] = 1;
+//     }
+
+
+//     for(int i = 0; i < this->collisionData.size(); i++) {
+//         for(int j = 0; j < this->collisionData[i].size(); j++) {
+//             std::cout << collisionData[i][j] << " ";
+
+//         }
+//         std::cout << std::endl;
+//     }
+//}
 
 
 

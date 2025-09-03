@@ -36,6 +36,9 @@ public:
     // Array that contains the sprites/elements gameObject information
     std::vector<GameObject> elementsInfo;
 
+    // Scenario colision data
+    std::vector<std::vector<unsigned int>> collisionData;
+
     // player initial position
     glm::vec2 PlayerPosition, PlayerSize;
 
@@ -56,6 +59,9 @@ public:
 private:
     // initialize level from tile data
     void init(unsigned int levelWidth, unsigned int levelHeight);
+
+     // Build the collision map
+     //void BuildCollisionMap(float unit_width, float unit_height);
 };
 
 #endif

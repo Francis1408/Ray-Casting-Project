@@ -26,7 +26,7 @@ const unsigned int SCREEN_HEIGHT = 512;
 const float ELAPSED_TIME = 0.5f;
 
 
-Game Breakout(SCREEN_WIDTH, SCREEN_HEIGHT);
+Game Engine(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 
 TextRenderer *textRenderer;
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 
 
     // Cretes the window
-    GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Breakout", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Raycasting Engine", nullptr, nullptr);
     glfwMakeContextCurrent(window);
 
     // glad: load all OpenGL function pointers
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
     // initialize game
     // ---------------
-    Breakout.Init();
+    Engine.Init();
     
 
     // Create the text shader
@@ -98,17 +98,17 @@ int main(int argc, char *argv[])
         
         // manage user input
         // -----------------
-        Breakout.ProcessInput(deltaTime);
+        Engine.ProcessInput(deltaTime);
         
         // update game state
         // -----------------
-        // Breakout.Update(deltaTime);
+         Engine.Update(deltaTime);
         
         // render
         // ------
         glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        Breakout.Render();
+        Engine.Render();
         
 
         // FPS Counter
@@ -135,9 +135,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (key >= 0 && key < 1024)
     {
         if (action == GLFW_PRESS)
-            Breakout.Keys[key] = true;
+            Engine.Keys[key] = true;
         else if (action == GLFW_RELEASE)
-            Breakout.Keys[key] = false;
+            Engine.Keys[key] = false;
     }
 }
 
@@ -167,19 +167,27 @@ void showFPS(float& fpsLastTime, unsigned int& fpsFrameCount) {
     }
     // Show the FPS time on screen
     textRenderer->DrawText("FPS: " + std::to_string(static_cast<int>(FPS)),
-        0.0f, 480.0f, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
+        0.0f, 480.0f, 0.5f, glm::vec3(1.0, 0.0f, 0.0f));
 
 }
 
 void showSideMenu() {
 
-    if(!Breakout.keyChartOn) {
+    if(!Engine.keyChartOn) {
 
         textRenderer->DrawText("Show Controls [TAB]",
             0.0f, 450.0f, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
     }
     else {
-        textRenderer->DrawText("LOL",
+        textRenderer->DrawText("W: Move forward",
             0.0f, 450.0f, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
+        textRenderer->DrawText("S: Move backward",
+            0.0f, 425.0f, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
+        textRenderer->DrawText("A: Rotate counter clockwise",
+            0.0f, 400.0f, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
+        textRenderer->DrawText("D: Rotate clockwise",
+            0.0f, 375.0f, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
+        textRenderer->DrawText("Shift: Sprint",
+            0.0f, 350.0f, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
     }
 }

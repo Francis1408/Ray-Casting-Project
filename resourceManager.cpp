@@ -15,7 +15,7 @@
 namespace fs = std::filesystem;
 
 // Instantiate static variables
-std::map<int, Texture2D>      ResourceManager::Textures;
+std::map<int, Texture2D>  ResourceManager::Textures;
 std::vector<std::string> texturePaths;
 std::map<std::string, Shader> ResourceManager::Shaders;
 std::map<GLchar, Character> ResourceManager::Characters;

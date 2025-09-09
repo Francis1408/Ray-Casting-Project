@@ -172,3 +172,8 @@ Once installed, you can compile and run the engine by the MAKEFILE. You simply r
 ```shell
 make run ARGS= "<Wall_File_path> <Floor_File_path> <Ceiling_File_path> <Sprite_File_path>"
 ```
+***
+### References
+>Lode Vandevenne: https://lodev.org/cgtutor/raycasting.html
+
+>Learn OpenGL: https://learnopengl.com/
